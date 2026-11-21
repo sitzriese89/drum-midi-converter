@@ -1,0 +1,224 @@
+# General MIDI drum map (GM percussion, channel 10).
+# Note numbers 35-81 per the MIDI Manufacturers Association General MIDI
+# Level 1 percussion key map. Names follow the GM spec; semantic tags follow
+# the ADR-001 tag vocabulary (family.qualifier[.qualifier...]).
+
+id = "gm"
+name = "General MIDI"
+vendor = "MMA"
+description = "General MIDI Level 1 percussion key map (notes 35-81, channel 10)."
+
+[notes.35]
+name = "Acoustic Bass Drum"
+tag = "kick.acoustic"
+
+[notes.36]
+name = "Bass Drum 1"
+tag = "kick.1"
+
+[notes.37]
+name = "Side Stick"
+tag = "snare.sidestick"
+
+[notes.38]
+name = "Acoustic Snare"
+tag = "snare.acoustic"
+
+[notes.39]
+name = "Hand Clap"
+tag = "clap.1"
+
+[notes.40]
+name = "Electric Snare"
+tag = "snare.electric"
+
+[notes.41]
+name = "Low Floor Tom"
+tag = "tom.floor.low"
+
+[notes.42]
+name = "Closed Hi-Hat"
+tag = "hihat.closed"
+
+[notes.43]
+name = "High Floor Tom"
+tag = "tom.floor.high"
+
+[notes.44]
+name = "Pedal Hi-Hat"
+tag = "hihat.pedal"
+
+[notes.45]
+name = "Low Tom"
+tag = "tom.low"
+
+[notes.46]
+name = "Open Hi-Hat"
+tag = "hihat.open"
+
+[notes.47]
+name = "Low-Mid Tom"
+tag = "tom.mid-low"
+
+[notes.48]
+name = "Hi-Mid Tom"
+tag = "tom.mid-high"
+
+[notes.49]
+name = "Crash Cymbal 1"
+tag = "crash.1"
+
+[notes.50]
+name = "High Tom"
+tag = "tom.high"
+
+[notes.51]
+name = "Ride Cymbal 1"
+tag = "ride.1"
+
+[notes.52]
+name = "Chinese Cymbal"
+tag = "crash.chinese"
+
+[notes.53]
+name = "Ride Bell"
+tag = "ride.bell"
+
+[notes.54]
+name = "Tambourine"
+tag = "percussion.tambourine"
+
+[notes.55]
+name = "Splash Cymbal"
+tag = "crash.splash"
+
+[notes.56]
+name = "Cowbell"
+tag = "percussion.cowbell"
+
+[notes.57]
+name = "Crash Cymbal 2"
+tag = "crash.2"
+
+[notes.58]
+name = "Vibraslap"
+tag = "percussion.vibraslap"
+
+[notes.59]
+name = "Ride Cymbal 2"
+tag = "ride.2"
+
+[notes.60]
+name = "High Bongo"
+tag = "bongo.high"
+
+[notes.61]
+name = "Low Bongo"
+tag = "bongo.low"
+
+[notes.62]
+name = "Mute High Conga"
+tag = "conga.high.mute"
+
+[notes.63]
+name = "Open High Conga"
+tag = "conga.high.open"
+
+[notes.64]
+name = "Low Conga"
+tag = "conga.low"
+
+[notes.65]
+name = "High Timbale"
+tag = "timbale.high"
+
+[notes.66]
+name = "Low Timbale"
+tag = "timbale.low"
+
+[notes.67]
+name = "High Agogo"
+tag = "agogo.high"
+
+[notes.68]
+name = "Low Agogo"
+tag = "agogo.low"
+
+[notes.69]
+name = "Cabasa"
+tag = "percussion.cabasa"
+
+[notes.70]
+name = "Maracas"
+tag = "percussion.maracas"
+
+[notes.71]
+name = "Short Whistle"
+tag = "whistle.short"
+
+[notes.72]
+name = "Long Whistle"
+tag = "whistle.long"
+
+[notes.73]
+name = "Short Guiro"
+tag = "guiro.short"
+
+[notes.74]
+name = "Long Guiro"
+tag = "guiro.long"
+
+[notes.75]
+name = "Claves"
+tag = "percussion.claves"
+
+[notes.76]
+name = "High Wood Block"
+tag = "woodblock.high"
+
+[notes.77]
+name = "Low Wood Block"
+tag = "woodblock.low"
+
+[notes.78]
+name = "Mute Cuica"
+tag = "cuica.mute"
+
+[notes.79]
+name = "Open Cuica"
+tag = "cuica.open"
+
+[notes.80]
+name = "Mute Triangle"
+tag = "triangle.mute"
+
+[notes.81]
+name = "Open Triangle"
+tag = "triangle.open"
+
+# Documented fallback rules (SPEC §3.3): when converting FROM the GM map,
+# collapse cymbal variants that other maps commonly lack.
+[fallback]
+[[fallback.rules]]
+from = "crash.chinese"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "crash.splash"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "ride.bell"
+to = "ride.1"
+
+[[fallback.rules]]
+from = "ride.2"
+to = "ride.1"
+
+[[fallback.rules]]
+from = "crash.2"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "hihat.pedal"
+to = "hihat.closed"

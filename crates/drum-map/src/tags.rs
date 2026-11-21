@@ -21,7 +21,7 @@ pub enum TagError {
     #[error("empty articulation tag")]
     Empty,
     #[error(
-        "invalid segment {segment:?} in tag {tag:?}: segments must be lowercase ascii alphanumerics"
+        "invalid segment {segment:?} in tag {tag:?}: segments must be lowercase ascii alphanumerics or hyphens"
     )]
     InvalidSegment { tag: String, segment: String },
 }
@@ -37,7 +37,7 @@ impl ArticulationTag {
             let valid = !seg.is_empty()
                 && seg
                     .chars()
-                    .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit());
+                    .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
             if !valid {
                 return Err(TagError::InvalidSegment {
                     tag: s.to_owned(),
@@ -59,6 +59,11 @@ impl ArticulationTag {
                 Some(Self(segments))
             }
         }
+    }
+
+    /// Number of tag segments (specificity); `hihat.open.4` has 3.
+    pub fn qualifiers(&self) -> usize {
+        self.0.len()
     }
 
     /// The top-level instrument family, e.g. `hihat` for `hihat.closed.edge`.

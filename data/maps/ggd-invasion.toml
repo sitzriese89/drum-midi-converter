@@ -1,0 +1,29 @@
+# PLACEHOLDER — real map authored separately.
+# A minimal stub of the GetGood Drums Invasion kit so the M1 core has a
+# second catalog entry to test against. Do NOT treat these tags as
+# authoritative; the real GGD Invasion map replaces this file.
+
+id = "ggd-invasion"
+name = "GetGood Drums Invasion (placeholder)"
+vendor = "GetGood Drums"
+description = "PLACEHOLDER — real map authored separately. Minimal stub for M1 testing."
+
+[notes.36]
+name = "Kick In"
+tag = "kick.1"
+
+[notes.38]
+name = "Snare Top"
+tag = "snare.center"
+
+[notes.42]
+name = "Closed HH Top"
+tag = "hihat.closed"
+
+[notes.46]
+name = "Open HH"
+tag = "hihat.open"
+
+[notes.49]
+name = "Crash 1"
+tag = "crash.1"
