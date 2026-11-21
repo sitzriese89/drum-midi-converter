@@ -1,22 +1,25 @@
 # Roadmap — drum-midi-converter
 
-Status: M0 (skeleton).
+Status: M1 done. Next: M2 (CLI).
 
-## M0 — Repository skeleton (current)
+## M0 — Repository skeleton
 
 - [x] SPEC.md, ADR.md, roadmap, licenses, workspace layout
-- [ ] Workspace compiles: `cargo build`, `cargo test` green
+- [x] Workspace compiles: `cargo build`, `cargo test` green
 
 ## M1 — Core crate (`crates/drum-map`)
 
-- [ ] TOML map schema: notes, semantic tags, fallback rules, per-pair overrides
-- [ ] Built-in catalog v1 (Q8): GGD Invasion, GGD M&M, GGD OKW, SD3, EZD2/3,
-      RS Drums (one kit), General MIDI — embedded at build time
-- [ ] MIDI parse/serialize via `midly`; preserve non-drum data (ADR-007)
-- [ ] Tag-matching converter + override resolution + LOSSY report data model
-- [ ] Unmapped-note passthrough with keep/drop/reassign resolution (Q3)
-- [ ] Detection heuristic + confidence hint (Q1)
-- [ ] Unit tests per map; property tests for round-trips
+- [x] TOML map schema: notes, semantic tags, fallback rules, per-pair overrides
+- [x] Built-in catalog v1 (Q8): GGD Invasion, GGD M&M, GGD OKW (Modern Fusion),
+      SD3, EZD3, RS Drums (Fairview), General MIDI — embedded at build time.
+      Note data is UNOFFICIAL (Drumverter-sourced, see data/research/);
+      tag vocabulary in docs/tag-taxonomy.md
+- [x] MIDI parse/serialize via `midly`; preserve non-drum data (ADR-007)
+- [x] Tag-matching converter + override resolution + LOSSY report data model
+- [x] Unmapped-note passthrough with keep/drop/reassign resolution (Q3)
+- [x] Detection heuristic + confidence hint (Q1)
+- [x] Unit tests per map; property tests for round-trips (41 tests green;
+      end-to-end check: `cargo run -p drum-map --example smoke`)
 
 ## M2 — CLI (`crates/drum-map-cli`)
 
