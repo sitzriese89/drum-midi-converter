@@ -41,6 +41,8 @@ pub enum CatalogError {
     },
     #[error("duplicate map id {id:?} in the catalog")]
     DuplicateId { id: String },
+    #[error("override file {file} does not follow the <from>-to-<to>.toml naming convention")]
+    OverrideName { file: &'static str },
 }
 
 /// Parse all embedded maps. Returns them in declaration order.
@@ -68,8 +70,15 @@ pub fn find_map(id: &str) -> Result<Option<DrumMap>, CatalogError> {
 pub fn override_tables() -> Result<Vec<OverrideTable>, CatalogError> {
     let mut tables = Vec::with_capacity(EMBEDDED_OVERRIDES.len());
     for (file, text) in EMBEDDED_OVERRIDES {
-        let table =
-            OverrideTable::parse(text).map_err(|source| CatalogError::Override { file, source })?;
+        let stem = file.trim_end_matches(".toml");
+        let (expected_from, expected_to) = match stem.split_once("-to-") {
+            Some((from, to)) => (from.to_owned(), to.to_owned()),
+            None => {
+                return Err(CatalogError::OverrideName { file });
+            }
+        };
+        let table = OverrideTable::parse_for(text, &expected_from, &expected_to)
+            .map_err(|source| CatalogError::Override { file, source })?;
         tables.push(table);
     }
     Ok(tables)

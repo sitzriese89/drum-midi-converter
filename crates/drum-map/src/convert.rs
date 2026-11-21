@@ -104,6 +104,15 @@ pub fn build_mapping(
     mapping
 }
 
+/// Build a `MappedNote` for a resolved target note (single construction site).
+fn mapped_note(to: &DrumMap, target: u8, lossy: bool) -> MappedNote {
+    MappedNote {
+        target,
+        target_name: to.note(target).map(|e| e.name.clone()).unwrap_or_default(),
+        lossy,
+    }
+}
+
 /// Resolve one source articulation tag against the target map.
 ///
 /// `depth` counts parent-walk steps: any match found after at least one
@@ -118,22 +127,14 @@ fn resolve(
     let lossy = depth > 0;
     // 1. Exact tag match.
     if let Some(target) = to.note_for_tag(tag) {
-        return Resolve::Mapped(MappedNote {
-            target,
-            target_name: to.note(target).map(|e| e.name.clone()).unwrap_or_default(),
-            lossy,
-        });
+        return Resolve::Mapped(mapped_note(to, target, lossy));
     }
     // 2. Per-pair override (tag -> different tag), then re-check exactly.
     if let Some(target) = overrides
         .and_then(|o| o.get(tag))
         .and_then(|t| to.note_for_tag(t))
     {
-        return Resolve::Mapped(MappedNote {
-            target,
-            target_name: to.note(target).map(|e| e.name.clone()).unwrap_or_default(),
-            lossy,
-        });
+        return Resolve::Mapped(mapped_note(to, target, lossy));
     }
     // 3. Documented fallback rules of the source map (SPEC §3.3).
     if let Some(fallback) = &from.fallback {
@@ -153,44 +154,14 @@ fn resolve(
 /// Map a lossy tag match to its target note.
 fn mapped_lossy(to: &DrumMap, tag: &ArticulationTag) -> Resolve {
     to.note_for_tag(tag)
-        .map(|target| {
-            Resolve::Mapped(MappedNote {
-                target,
-                target_name: to.note(target).map(|e| e.name.clone()).unwrap_or_default(),
-                lossy: true,
-            })
-        })
+        .map(|target| Resolve::Mapped(mapped_note(to, target, true)))
         .unwrap_or(Resolve::Unmapped)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn tag(s: &str) -> ArticulationTag {
-        ArticulationTag::parse(s).unwrap()
-    }
-
-    fn map(id: &str, entries: &[(&str, u8, &str)]) -> DrumMap {
-        let mut notes = HashMap::new();
-        for (name, note, t) in entries {
-            notes.insert(
-                *note,
-                crate::map::NoteEntry {
-                    name: (*name).to_owned(),
-                    tag: tag(t),
-                },
-            );
-        }
-        DrumMap {
-            id: id.to_owned(),
-            name: id.to_owned(),
-            vendor: "V".to_owned(),
-            description: None,
-            notes,
-            fallback: None,
-        }
-    }
+    use crate::test_fixtures::{map, t};
 
     #[test]
     fn exact_tag_match_wins() {
@@ -255,8 +226,8 @@ mod tests {
         let mut from = map("a", &[("Open HH 4", 46, "hihat.open.4")]);
         from.fallback = Some(crate::map::FallbackSection {
             rules: vec![crate::map::FallbackRule {
-                from: tag("hihat.open.4"),
-                to: tag("hihat.closed"),
+                from: t("hihat.open.4"),
+                to: t("hihat.closed"),
             }],
         });
         let to = map(

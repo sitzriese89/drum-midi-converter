@@ -30,7 +30,7 @@
 //! The `fallback` section is optional; without it the converter only uses
 //! the generic parent-walk fallback (see `convert`).
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -48,12 +48,12 @@ pub struct DrumMap {
     /// Free-form description shown in the UI. Optional.
     #[serde(default)]
     pub description: Option<String>,
-    /// Note entries keyed by MIDI note number (0-127).
+    /// Note entries keyed by MIDI note number (0-127). Sorted ascending.
     #[serde(
         deserialize_with = "parse_note_keys",
         serialize_with = "write_note_keys"
     )]
-    pub notes: HashMap<u8, NoteEntry>,
+    pub notes: BTreeMap<u8, NoteEntry>,
     /// Documented per-map fallback rules (SPEC §3.3). Optional.
     #[serde(default)]
     pub fallback: Option<FallbackSection>,
@@ -108,27 +108,41 @@ impl DrumMap {
 }
 
 /// TOML keys are strings; parse them into MIDI note numbers.
-fn parse_note_keys<'de, D>(deserializer: D) -> Result<HashMap<u8, NoteEntry>, D::Error>
+///
+/// Also enforces that each articulation tag is unique within the map: two
+/// notes sharing a tag would make `note_for_tag` ambiguous, so the TOML is
+/// rejected at parse time, naming the duplicate tag and both note numbers.
+fn parse_note_keys<'de, D>(deserializer: D) -> Result<BTreeMap<u8, NoteEntry>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    let raw = HashMap::<String, NoteEntry>::deserialize(deserializer)?;
-    raw.into_iter()
-        .map(|(k, v)| {
-            k.parse::<u8>()
-                .ok()
-                .filter(|n| *n <= 127)
-                .map(|n| (n, v))
-                .ok_or_else(|| serde::de::Error::custom(format!("invalid MIDI note key {k:?}")))
-        })
-        .collect()
+    let raw = std::collections::HashMap::<String, NoteEntry>::deserialize(deserializer)?;
+    let mut notes: BTreeMap<u8, NoteEntry> = BTreeMap::new();
+    for (k, v) in raw {
+        let note = k
+            .parse::<u8>()
+            .ok()
+            .filter(|n| *n <= 127)
+            .ok_or_else(|| serde::de::Error::custom(format!("invalid MIDI note key {k:?}")))?;
+        if let Some((prev, tag)) = notes
+            .iter()
+            .find(|(_, e)| e.tag == v.tag)
+            .map(|(n, e)| (*n, e.tag.to_string()))
+        {
+            return Err(serde::de::Error::custom(format!(
+                "duplicate tag {tag} on notes {prev} and {note}"
+            )));
+        }
+        notes.insert(note, v);
+    }
+    Ok(notes)
 }
 
-fn write_note_keys<S>(notes: &HashMap<u8, NoteEntry>, serializer: S) -> Result<S::Ok, S::Error>
+fn write_note_keys<S>(notes: &BTreeMap<u8, NoteEntry>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
 {
-    let raw: HashMap<String, &NoteEntry> = notes.iter().map(|(k, v)| (k.to_string(), v)).collect();
+    let raw: BTreeMap<String, &NoteEntry> = notes.iter().map(|(k, v)| (k.to_string(), v)).collect();
     raw.serialize(serializer)
 }
 
@@ -156,6 +170,30 @@ mod tests {
         assert_eq!(map.notes.len(), 2);
         assert_eq!(map.notes[&38].tag.to_string(), "snare.center");
         assert!(map.fallback.is_none());
+        // BTreeMap: iteration is sorted ascending.
+        assert_eq!(map.used_notes(), vec![36, 38]);
+    }
+
+    #[test]
+    fn map_rejects_duplicate_tags() {
+        let toml_src = r#"
+            id = "x"
+            name = "X"
+            vendor = "V"
+
+            [notes.38]
+            name = "Snare"
+            tag = "snare.center"
+
+            [notes.40]
+            name = "Snare Alt"
+            tag = "snare.center"
+        "#;
+        let err = toml::from_str::<DrumMap>(toml_src).unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("duplicate tag snare.center"), "{msg}");
+        assert!(msg.contains("38"), "{msg}");
+        assert!(msg.contains("40"), "{msg}");
     }
 
     #[test]

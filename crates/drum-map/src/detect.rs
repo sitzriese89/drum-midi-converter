@@ -2,10 +2,10 @@
 //!
 //! Detection is a *hint*, never a decision: the function returns ranked
 //! candidates with a confidence score so the UI can pre-select one and warn
-//! on a mismatch. Scoring: a candidate map earns the fraction of used notes
-//! it contains, weighted by how specific each matched note's tag is (a
-//! multi-qualifier tag like `hihat.open.4` proves more than a bare family
-//! name like `kick`).
+//! on a mismatch. Scoring: confidence is the plain coverage fraction (the
+//! share of used notes the candidate map contains), so it honestly means
+//! "how much of the file's vocabulary this map explains". Tag specificity
+//! is used only as a tie-break when maps cover the same notes.
 
 use crate::map::DrumMap;
 
@@ -20,12 +20,6 @@ pub struct Candidate {
     pub coverage: f64,
     /// Sum of tag qualifiers in the candidate map (tie-break evidence).
     pub specificity: usize,
-}
-
-/// Weight of a tag match by specificity: number of tag qualifiers.
-fn tag_weight(qualifiers: usize) -> f64 {
-    // 1 qualifier = 1.0, 2 = 1.25, 3 = 1.5, ... — diminishing returns.
-    1.0 + 0.25 * (qualifiers.saturating_sub(1)) as f64
 }
 
 /// Rank all catalog maps against the used note numbers.
@@ -44,16 +38,14 @@ pub fn detect(used: &[u8], catalog: &[DrumMap]) -> Vec<Candidate> {
     let mut candidates: Vec<Candidate> = catalog
         .iter()
         .map(|map| {
-            let mut weighted_hits = 0.0f64;
-            let mut hits = 0usize;
-            for &note in &used {
-                if let Some(entry) = map.note(note) {
-                    hits += 1;
-                    weighted_hits += tag_weight(entry.tag.qualifiers());
-                }
-            }
+            let hits = used
+                .iter()
+                .filter(|&&note| map.note(note).is_some())
+                .count();
+            // Confidence is the plain coverage fraction: a map missing a
+            // third of the used notes must never score 1.0.
             let coverage = hits as f64 / used.len() as f64;
-            let confidence = (weighted_hits / used.len() as f64).min(1.0);
+            let confidence = coverage;
             let specificity = map
                 .notes
                 .values()
@@ -67,9 +59,9 @@ pub fn detect(used: &[u8], catalog: &[DrumMap]) -> Vec<Candidate> {
             }
         })
         .collect();
-    // Confidence is capped at 1.0, so ties are broken by tag specificity
-    // (more specific tags are stronger evidence), then by map id for
-    // determinism.
+    // Confidence is the coverage fraction, so ties are broken by tag
+    // specificity (more specific tags are stronger evidence), then by map
+    // id for determinism.
     candidates.sort_by(|a, b| {
         b.confidence
             .partial_cmp(&a.confidence)
@@ -82,36 +74,8 @@ pub fn detect(used: &[u8], catalog: &[DrumMap]) -> Vec<Candidate> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use super::*;
-    use crate::map::NoteEntry;
-    use crate::tags::ArticulationTag;
-
-    fn t(s: &str) -> ArticulationTag {
-        ArticulationTag::parse(s).unwrap()
-    }
-
-    fn map(id: &str, entries: &[u8]) -> DrumMap {
-        let mut notes = HashMap::new();
-        for &note in entries {
-            notes.insert(
-                note,
-                NoteEntry {
-                    name: format!("N{note}"),
-                    tag: t("kick.1"),
-                },
-            );
-        }
-        DrumMap {
-            id: id.to_owned(),
-            name: id.to_owned(),
-            vendor: "V".to_owned(),
-            description: None,
-            notes,
-            fallback: None,
-        }
-    }
+    use crate::test_fixtures::{map_notes as map, t};
 
     #[test]
     fn perfect_match_scores_one() {
@@ -128,6 +92,8 @@ mod tests {
         let cands = detect(&[36, 38, 42], &catalog);
         assert_eq!(cands[0].map_id, "a");
         assert!((cands[0].coverage - 2.0 / 3.0).abs() < 1e-9);
+        // Confidence equals the coverage fraction.
+        assert!((cands[0].confidence - 2.0 / 3.0).abs() < 1e-9);
     }
 
     #[test]
@@ -137,8 +103,8 @@ mod tests {
         let mut generic = map("generic", &[38]);
         generic.notes.get_mut(&38).unwrap().tag = t("kick");
         let catalog = vec![specific, generic];
-        // Both cover 38 with capped confidence 1.0; the specificity
-        // tie-break ranks the specific tag first.
+        // Both cover 38 with confidence 1.0; the specificity tie-break
+        // ranks the specific tag first.
         let cands = detect(&[38], &catalog);
         assert_eq!(cands[0].map_id, "specific");
         assert!(cands[0].specificity > cands[1].specificity);

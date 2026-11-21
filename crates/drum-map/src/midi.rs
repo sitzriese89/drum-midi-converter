@@ -35,6 +35,10 @@ pub enum MidiError {
     Parse(#[from] midly::Error),
     #[error("failed to serialize SMF: {0}")]
     Write(#[from] std::io::Error),
+    #[error("unknown map id {id:?} in the embedded catalog")]
+    UnknownMap { id: String },
+    #[error("catalog error: {0}")]
+    Catalog(#[from] crate::catalog::CatalogError),
 }
 
 /// Everything needed to rewrite one drum track: the tag-derived note mapping
@@ -232,12 +236,11 @@ pub fn convert(
             row.lossy = mapped.lossy;
             row.unmapped = false;
         } else {
+            // Unmapped rows never claim a target: `unmapped` already carries
+            // the kept-as-is info, so consumers can distinguish "converted
+            // to N" from "unmapped (kept / dropped)".
             match resolution.resolution_for(row.source_note) {
-                Resolution::Keep => {
-                    row.target_note = Some(row.source_note);
-                    row.target_name = to.note(row.source_note).map(|e| e.name.clone());
-                }
-                Resolution::Drop => {
+                Resolution::Keep | Resolution::Drop => {
                     row.target_note = None;
                     row.target_name = None;
                 }
@@ -256,38 +259,37 @@ pub fn convert(
     Ok((bytes, report))
 }
 
+/// Id-based convenience wrapper around [`convert`] (SPEC §4.2).
+///
+/// Resolves `from_id` and `to_id` from the embedded catalog, along with the
+/// pair's override table if one exists. Errors name the unknown map id.
+pub fn convert_by_id(
+    smf_bytes: &[u8],
+    from_id: &str,
+    to_id: &str,
+    options: &ConvertOptions,
+) -> Result<(Vec<u8>, Report), MidiError> {
+    let maps = crate::catalog::catalog()?;
+    let find = |id: &str| {
+        maps.iter()
+            .find(|m| m.id == id)
+            .cloned()
+            .ok_or_else(|| MidiError::UnknownMap { id: id.to_owned() })
+    };
+    let from = find(from_id)?;
+    let to = find(to_id)?;
+    let overrides = crate::catalog::override_tables()?
+        .into_iter()
+        .find(|t| t.from == from_id && t.to == to_id);
+    convert(smf_bytes, &from, &to, overrides.as_ref(), options)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::map::NoteEntry;
-    use crate::tags::ArticulationTag;
+    use crate::test_fixtures::map;
     use midly::Timing;
     use midly::num::{u15, u24};
-
-    fn t(s: &str) -> ArticulationTag {
-        ArticulationTag::parse(s).unwrap()
-    }
-
-    fn map(id: &str, entries: &[(&str, u8, &str)]) -> DrumMap {
-        let mut notes = HashMap::new();
-        for (name, note, tag) in entries {
-            notes.insert(
-                *note,
-                NoteEntry {
-                    name: (*name).to_owned(),
-                    tag: t(tag),
-                },
-            );
-        }
-        DrumMap {
-            id: id.to_owned(),
-            name: id.to_owned(),
-            vendor: "V".to_owned(),
-            description: None,
-            notes,
-            fallback: None,
-        }
-    }
 
     /// Format-1 SMF: track 0 = tempo/time-sig/marker; track 1 = drums on
     /// channel 10 (incl. a velocity-0 note-on); track 2 = melody on ch 1.
@@ -485,7 +487,10 @@ mod tests {
         assert!(!kick.unmapped);
         let cowbell = report.rows.iter().find(|r| r.source_note == 56).unwrap();
         assert!(cowbell.unmapped);
-        assert_eq!(cowbell.target_note, Some(56)); // Keep default
+        // Unmapped + Keep: no target info — the `unmapped` flag carries the
+        // kept-as-is info so consumers can distinguish it from a conversion.
+        assert_eq!(cowbell.target_note, None);
+        assert_eq!(cowbell.target_name, None);
         assert_eq!(cowbell.hit_count, 1);
     }
 
@@ -553,5 +558,71 @@ mod tests {
     fn invalid_smf_is_rejected() {
         let (from, to) = source_target_maps();
         assert!(convert(&[0u8; 4], &from, &to, None, &ConvertOptions::default()).is_err());
+    }
+
+    /// One-track SMF with a single kick hit (36) on the drum channel.
+    fn kick_smf() -> Vec<u8> {
+        let header =
+            midly::Header::new(midly::Format::SingleTrack, Timing::Metrical(u15::new(480)));
+        let track: Track = vec![
+            TrackEvent {
+                delta: u28::new(0),
+                kind: TrackEventKind::Midi {
+                    channel: DRUM_CHANNEL,
+                    message: MidiMessage::NoteOn {
+                        key: u7::new(36),
+                        vel: u7::new(100),
+                    },
+                },
+            },
+            TrackEvent {
+                delta: u28::new(240),
+                kind: TrackEventKind::Midi {
+                    channel: DRUM_CHANNEL,
+                    message: MidiMessage::NoteOff {
+                        key: u7::new(36),
+                        vel: u7::new(64),
+                    },
+                },
+            },
+        ];
+        let mut bytes = Vec::new();
+        Smf {
+            header,
+            tracks: vec![track],
+        }
+        .write(&mut bytes)
+        .unwrap();
+        bytes
+    }
+
+    #[test]
+    fn convert_by_id_resolves_catalog_maps() {
+        let smf = kick_smf();
+        let (out, report) =
+            convert_by_id(&smf, "gm", "ggd-invasion", &ConvertOptions::default()).unwrap();
+        let parsed = parse_out(&out);
+        let drums: Vec<_> = parsed.tracks[0]
+            .iter()
+            .filter_map(|e| match e.kind {
+                TrackEventKind::Midi { message, .. } => Some(message),
+                _ => None,
+            })
+            .collect();
+        assert!(matches!(drums[0], MidiMessage::NoteOn { key, .. } if key.as_int() == 36));
+        let kick = report.rows.iter().find(|r| r.source_note == 36).unwrap();
+        assert_eq!(kick.target_note, Some(36));
+        assert_eq!(kick.target_name.as_deref(), Some("Kick In"));
+        assert!(!kick.unmapped);
+    }
+
+    #[test]
+    fn convert_by_id_names_unknown_map() {
+        let err =
+            convert_by_id(&[0u8; 4], "gm", "no-such-map", &ConvertOptions::default()).unwrap_err();
+        assert!(
+            err.to_string().contains("unknown map id \"no-such-map\""),
+            "{err}"
+        );
     }
 }
