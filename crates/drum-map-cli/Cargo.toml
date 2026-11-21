@@ -1,0 +1,16 @@
+[package]
+name = "drum-map-cli"
+description = "Headless CLI for drum-midi-converter."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "drum-midi-converter"
+path = "src/main.rs"
+
+[dependencies]
+drum-map.workspace = true
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }

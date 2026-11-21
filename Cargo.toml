@@ -1,0 +1,20 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/drum-map",
+    "crates/drum-map-wasm",
+    "crates/drum-map-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/sitzriese89/drum-midi-converter"
+
+[workspace.dependencies]
+drum-map = { path = "crates/drum-map" }
+midly = "0.5"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+thiserror = "2"
