@@ -267,3 +267,61 @@ to = "ride.bell"
 [[fallback.rules]]
 from = "bell.2"
 to = "ride.bell"
+
+# Tom collapses (same family first, GM-pitched after — rules only fire when
+# the target lacks the exact tag).
+[[fallback.rules]]
+from = "tom.rack.3"
+to = "tom.rack.2"
+
+[[fallback.rules]]
+from = "tom.floor.2"
+to = "tom.floor.1"
+
+[[fallback.rules]]
+from = "tom.floor.3"
+to = "tom.floor.1"
+
+[[fallback.rules]]
+from = "tom.rack.1"
+to = "tom.mid-high"
+
+[[fallback.rules]]
+from = "tom.rack.2"
+to = "tom.mid-low"
+
+[[fallback.rules]]
+from = "tom.rack.3"
+to = "tom.low"
+
+[[fallback.rules]]
+from = "tom.floor.1"
+to = "tom.floor.high"
+
+[[fallback.rules]]
+from = "tom.floor.2"
+to = "tom.floor.low"
+
+[[fallback.rules]]
+from = "tom.floor.3"
+to = "tom.floor.low"
+
+# Bare hat tags resolve to tip strokes when the target splits tip/edge
+# (Toontrack maps); skipped when the target has the bare tag (GGD maps).
+[[fallback.rules]]
+from = "hihat.open.1"
+to = "hihat.open.1.tip"
+
+[[fallback.rules]]
+from = "hihat.open.2"
+to = "hihat.open.2.tip"
+
+[[fallback.rules]]
+from = "hihat.open.3"
+to = "hihat.open.3.tip"
+
+# Invasion's ladder starts at Open 1; targets whose ladder starts at Open 2
+# (Modern & Massive) get the nearest available level.
+[[fallback.rules]]
+from = "hihat.open.1"
+to = "hihat.open.2"

@@ -28,7 +28,8 @@ Segments: lowercase ascii alphanumerics plus `-`, joined by `.`
 `snare.center` (main hit), `snare.2` (second snare drum),
 `snare.side` (side snare), `snare.rimshot`, `snare.rim`, `snare.sidestick`,
 `snare.flam`, `snare.ruff`, `snare.off` (snares off),
-`snare.acoustic` / `snare.electric` (GM).
+`snare.electric` (GM 40; GM 38 "Acoustic Snare" uses the canonical
+`snare.center`).
 Duplicate triggers: `snare.center.2`, `snare.sidestick.2`, …
 
 ### Toms

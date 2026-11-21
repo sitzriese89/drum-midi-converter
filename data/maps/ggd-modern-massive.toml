@@ -152,3 +152,41 @@ to = "crash.1"
 [[fallback.rules]]
 from = "splash.1"
 to = "crash.1"
+
+# Unsplit hat strokes resolve to tip on tip/edge-split targets.
+[[fallback.rules]]
+from = "hihat.tight"
+to = "hihat.tight.tip"
+
+[[fallback.rules]]
+from = "hihat.closed"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.open.2"
+to = "hihat.open.2.tip"
+
+[[fallback.rules]]
+from = "hihat.open.3"
+to = "hihat.open.3.tip"
+
+[[fallback.rules]]
+from = "hihat.open.4"
+to = "hihat.open.4.tip"
+
+# Tom collapses (same family first, GM-pitched after).
+[[fallback.rules]]
+from = "tom.floor.2"
+to = "tom.floor.1"
+
+[[fallback.rules]]
+from = "tom.rack.1"
+to = "tom.mid-high"
+
+[[fallback.rules]]
+from = "tom.floor.1"
+to = "tom.floor.high"
+
+[[fallback.rules]]
+from = "tom.floor.2"
+to = "tom.floor.low"

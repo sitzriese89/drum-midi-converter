@@ -84,11 +84,13 @@ mod tests {
         assert_eq!(inv.note(24).unwrap().name, "Kick");
         // crash.1: GM 49 -> Invasion 52.
         assert_eq!(mapping.get(&49).unwrap().target, 52);
-        // GM 42 hihat.closed has no match in Invasion (tips/edges only) and
-        // the parent-walk stops at the bare `hihat` family.
-        assert!(!mapping.contains_key(&42));
-        // GM 38 is snare.acoustic; Invasion has no matching tag.
-        assert!(!mapping.contains_key(&38));
+        // GM 42 hihat.closed collapses (documented GM fallback rule) to
+        // Invasion's Closed Tip at 43, LOSSY.
+        let hat = mapping.get(&42).unwrap();
+        assert_eq!(hat.target, 43);
+        assert!(hat.lossy);
+        // GM 38 snare.center maps exactly to Invasion's Snare at 26.
+        assert_eq!(mapping.get(&38).unwrap().target, 26);
         assert!(!mapping.contains_key(&56)); // cowbell unmapped
     }
 

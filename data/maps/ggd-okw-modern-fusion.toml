@@ -131,3 +131,37 @@ to = "crash.1"
 [[fallback.rules]]
 from = "stack.1"
 to = "crash.1"
+
+# Tom collapses (same family first, GM-pitched after).
+[[fallback.rules]]
+from = "tom.rack.2"
+to = "tom.rack.1"
+
+[[fallback.rules]]
+from = "tom.rack.1"
+to = "tom.mid-high"
+
+[[fallback.rules]]
+from = "tom.rack.2"
+to = "tom.mid-low"
+
+[[fallback.rules]]
+from = "tom.floor.1"
+to = "tom.floor.high"
+
+# Bare open-hat tags resolve to tip strokes on tip/edge-split targets.
+[[fallback.rules]]
+from = "hihat.open.1"
+to = "hihat.open.1.tip"
+
+[[fallback.rules]]
+from = "hihat.open.2"
+to = "hihat.open.2.tip"
+
+[[fallback.rules]]
+from = "hihat.open.3"
+to = "hihat.open.3.tip"
+
+[[fallback.rules]]
+from = "hihat.open.1"
+to = "hihat.open.2"

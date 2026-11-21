@@ -22,7 +22,7 @@ tag = "snare.sidestick"
 
 [notes.38]
 name = "Acoustic Snare"
-tag = "snare.acoustic"
+tag = "snare.center"
 
 [notes.39]
 name = "Hand Clap"
@@ -222,3 +222,58 @@ to = "crash.1"
 [[fallback.rules]]
 from = "hihat.pedal"
 to = "hihat.closed"
+
+# GM pitched toms / generic names collapse into the canonical taxonomy when
+# the target map uses ranked or tip/edge-split tags (rules only fire when no
+# exact match exists in the target).
+[[fallback.rules]]
+from = "tom.high"
+to = "tom.rack.1"
+
+[[fallback.rules]]
+from = "tom.mid-high"
+to = "tom.rack.2"
+
+[[fallback.rules]]
+from = "tom.mid-low"
+to = "tom.rack.3"
+
+[[fallback.rules]]
+from = "tom.low"
+to = "tom.floor.1"
+
+[[fallback.rules]]
+from = "tom.floor.high"
+to = "tom.floor.1"
+
+[[fallback.rules]]
+from = "tom.floor.low"
+to = "tom.floor.2"
+
+[[fallback.rules]]
+from = "snare.electric"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "kick.acoustic"
+to = "kick.1"
+
+[[fallback.rules]]
+from = "hihat.closed"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.open"
+to = "hihat.open.2"
+
+[[fallback.rules]]
+from = "hihat.open"
+to = "hihat.open.2.tip"
+
+[[fallback.rules]]
+from = "crash.chinese"
+to = "china.1"
+
+[[fallback.rules]]
+from = "crash.splash"
+to = "splash.1"
