@@ -1,0 +1,637 @@
+# Toontrack Superior Drummer 3 drum map — default "GM Extended" mapping.
+# Source: UNOFFICIAL, compiled from https://drumverter.com/engines/superior-drummer3/
+# (Toontrack's official MIDI layouts are behind a login; see
+# data/research/vendor-maps.md §4 for the official structural statements).
+# Tags follow docs/tag-taxonomy.md. SD3 triggers many articulations on several
+# notes; duplicates get numeric suffixes in ascending note order, with the
+# primary on the GM-style position.
+
+id = "sd3"
+name = "Superior Drummer 3"
+vendor = "Toontrack"
+description = "Superior Drummer 3 default 'GM Extended' mapping (SD2-compatible). Deep hi-hat ladder (tight/loose/closed/open 1-5, tip/edge/bell) and many duplicate trigger notes across snare, kick, hats and cymbals. Officially GM Extended; GM notes 36/37/38/42/44/46 and toms 41-48 are honored."
+
+# Kick
+[notes.34]
+name = "Kick"
+tag = "kick.2"
+
+[notes.35]
+name = "Kick"
+tag = "kick.3"
+
+[notes.36]
+name = "Kick"
+tag = "kick.1"
+
+# Snare
+[notes.6]
+name = "Snare"
+tag = "snare.center.2"
+
+[notes.33]
+name = "Snare (Side)"
+tag = "snare.side"
+
+[notes.37]
+name = "Side Stick"
+tag = "snare.sidestick"
+
+[notes.38]
+name = "Snare"
+tag = "snare.center"
+
+[notes.39]
+name = "Snare Ruff"
+tag = "snare.ruff"
+
+[notes.40]
+name = "Snare Rimshot"
+tag = "snare.rimshot"
+
+[notes.66]
+name = "Snare"
+tag = "snare.center.3"
+
+[notes.67]
+name = "Side Stick"
+tag = "snare.sidestick.2"
+
+[notes.68]
+name = "Snare"
+tag = "snare.center.4"
+
+[notes.69]
+name = "Snare Flam"
+tag = "snare.flam"
+
+[notes.70]
+name = "Snare"
+tag = "snare.center.5"
+
+[notes.71]
+name = "Snare Rim"
+tag = "snare.rim"
+
+[notes.76]
+name = "Side Stick"
+tag = "snare.sidestick.3"
+
+[notes.125]
+name = "Snare"
+tag = "snare.center.6"
+
+[notes.126]
+name = "Snare"
+tag = "snare.center.7"
+
+[notes.127]
+name = "Side Stick"
+tag = "snare.sidestick.4"
+
+# Toms
+[notes.41]
+name = "Floor Tom 2"
+tag = "tom.floor.2"
+
+[notes.43]
+name = "Floor Tom 1"
+tag = "tom.floor.1"
+
+[notes.45]
+name = "Rack Tom 3"
+tag = "tom.rack.3"
+
+[notes.47]
+name = "Rack Tom 2"
+tag = "tom.rack.2"
+
+[notes.48]
+name = "Rack Tom 1"
+tag = "tom.rack.1"
+
+[notes.72]
+name = "Floor Tom 2 Rim"
+tag = "tom.floor.2.rim"
+
+[notes.73]
+name = "Floor Tom 2 Rimshot"
+tag = "tom.floor.2.rimshot"
+
+[notes.74]
+name = "Floor Tom 1 Rim"
+tag = "tom.floor.1.rim"
+
+[notes.75]
+name = "Floor Tom 1 Rimshot"
+tag = "tom.floor.1.rimshot"
+
+[notes.77]
+name = "Rack Tom 3 Rim"
+tag = "tom.rack.3.rim"
+
+[notes.78]
+name = "Rack Tom 3 Rimshot"
+tag = "tom.rack.3.rimshot"
+
+[notes.79]
+name = "Rack Tom 2 Rim"
+tag = "tom.rack.2.rim"
+
+[notes.80]
+name = "Rack Tom 2 Rimshot"
+tag = "tom.rack.2.rimshot"
+
+[notes.81]
+name = "Rack Tom 1 Rim"
+tag = "tom.rack.1.rim"
+
+[notes.82]
+name = "Rack Tom 1 Rimshot"
+tag = "tom.rack.1.rimshot"
+
+# Hi-hat: low-register ladder (tips 7-17, CC/edge/bell strokes 18-26),
+# then GM-register duplicates 42/44/46/60-64 and the bell ladder 119-124.
+[notes.7]
+name = "Hi-Hat CC Edge"
+tag = "hihat.cc.edge"
+
+[notes.8]
+name = "Hi-Hat CC Tip"
+tag = "hihat.cc.tip"
+
+[notes.9]
+name = "Hi-Hat CC Bell"
+tag = "hihat.cc.bell"
+
+[notes.10]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal"
+
+[notes.11]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip"
+
+[notes.12]
+name = "Hi-Hat Loose Tip"
+tag = "hihat.loose.tip"
+
+[notes.13]
+name = "Hi-Hat Open 1 Tip"
+tag = "hihat.open.1.tip"
+
+[notes.14]
+name = "Hi-Hat Open 2 Tip"
+tag = "hihat.open.2.tip"
+
+[notes.15]
+name = "Hi-Hat Open 3 Tip"
+tag = "hihat.open.3.tip"
+
+[notes.16]
+name = "Hi-Hat Open 4 Tip"
+tag = "hihat.open.4.tip"
+
+[notes.17]
+name = "Hi-Hat Open 5 Tip"
+tag = "hihat.open.5.tip"
+
+[notes.18]
+name = "Hi-Hat CC Edge"
+tag = "hihat.cc.edge.2"
+
+[notes.19]
+name = "Hi-Hat CC Tip"
+tag = "hihat.cc.tip.2"
+
+[notes.20]
+name = "Hi-Hat CC Bell"
+tag = "hihat.cc.bell.2"
+
+[notes.21]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal.2"
+
+[notes.22]
+name = "Hi-Hat Closed Edge"
+tag = "hihat.closed.edge"
+
+[notes.23]
+name = "Hi-Hat Pedal Splash"
+tag = "hihat.pedal.splash"
+
+[notes.24]
+name = "Hi-Hat Open 1 Edge"
+tag = "hihat.open.1.edge"
+
+[notes.25]
+name = "Hi-Hat Open 2 Edge"
+tag = "hihat.open.2.edge"
+
+[notes.26]
+name = "Hi-Hat Open 3 Edge"
+tag = "hihat.open.3.edge"
+
+[notes.42]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip.2"
+
+[notes.44]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal.3"
+
+[notes.46]
+name = "Hi-Hat Open 2 Edge"
+tag = "hihat.open.2.edge.2"
+
+[notes.60]
+name = "Hi-Hat Open 4 Edge"
+tag = "hihat.open.4.edge"
+
+[notes.61]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip.3"
+
+[notes.62]
+name = "Hi-Hat Tight Edge"
+tag = "hihat.tight.edge"
+
+[notes.63]
+name = "Hi-Hat Tight Tip"
+tag = "hihat.tight.tip"
+
+[notes.64]
+name = "Hi-Hat Loose Edge"
+tag = "hihat.loose.edge"
+
+[notes.119]
+name = "Hi-Hat Closed Bell"
+tag = "hihat.closed.bell"
+
+[notes.120]
+name = "Hi-Hat Loose Bell"
+tag = "hihat.loose.bell"
+
+[notes.121]
+name = "Hi-Hat Open 1 Bell"
+tag = "hihat.open.1.bell"
+
+[notes.122]
+name = "Hi-Hat Open 2 Bell"
+tag = "hihat.open.2.bell"
+
+[notes.123]
+name = "Hi-Hat Open 3 Bell"
+tag = "hihat.open.3.bell"
+
+[notes.124]
+name = "Hi-Hat Open 4 Bell"
+tag = "hihat.open.4.bell"
+
+# Cymbals
+[notes.27]
+name = "Crash 2 Bow Tip"
+tag = "crash.2.bow.tip"
+
+[notes.28]
+name = "Crash 2 Bell"
+tag = "crash.2.bell"
+
+[notes.29]
+name = "Ride"
+tag = "ride.1"
+
+[notes.30]
+name = "Ride Bell Tip"
+tag = "ride.bell.tip"
+
+[notes.31]
+name = "Crash 4 Bow Tip"
+tag = "crash.4.bow.tip"
+
+[notes.32]
+name = "Crash 4 Bell"
+tag = "crash.4.bell"
+
+[notes.49]
+name = "Crash 2"
+tag = "crash.2"
+
+[notes.50]
+name = "Crash 2 (Mute)"
+tag = "crash.2.mute"
+
+[notes.51]
+name = "Ride Bow Tip"
+tag = "ride.bow.tip"
+
+[notes.52]
+name = "China 1"
+tag = "china.1"
+
+[notes.53]
+name = "Ride Bell"
+tag = "ride.bell"
+
+[notes.54]
+name = "China 1 (Mute)"
+tag = "china.1.mute"
+
+[notes.55]
+name = "Crash 3"
+tag = "crash.3"
+
+[notes.56]
+name = "Crash 3 (Mute)"
+tag = "crash.3.mute"
+
+[notes.57]
+name = "Crash 4"
+tag = "crash.4"
+
+[notes.58]
+name = "Crash 4 (Mute)"
+tag = "crash.4.mute"
+
+[notes.59]
+name = "Ride Edge"
+tag = "ride.edge"
+
+[notes.83]
+name = "Crash 1 (Mute)"
+tag = "crash.1.mute"
+
+[notes.84]
+name = "Crash 1 Bow Tip"
+tag = "crash.1.bow.tip"
+
+[notes.85]
+name = "Crash 1 Bell"
+tag = "crash.1.bell"
+
+[notes.86]
+name = "Crash 1"
+tag = "crash.1"
+
+[notes.87]
+name = "Crash 1 Bow"
+tag = "crash.1.bow"
+
+[notes.88]
+name = "Crash 1 Bell Tip"
+tag = "crash.1.bell.tip"
+
+[notes.89]
+name = "Crash 2 Bow Tip"
+tag = "crash.2.bow.tip.2"
+
+[notes.90]
+name = "Crash 2 Bell"
+tag = "crash.2.bell.2"
+
+[notes.91]
+name = "Crash 2"
+tag = "crash.2.2"
+
+[notes.92]
+name = "Crash 2 Bow"
+tag = "crash.2.bow"
+
+[notes.93]
+name = "Crash 2 Bell Tip"
+tag = "crash.2.bell.tip"
+
+[notes.94]
+name = "Crash 2 (Mute)"
+tag = "crash.2.mute.2"
+
+[notes.95]
+name = "Crash 3 (Mute)"
+tag = "crash.3.mute.2"
+
+[notes.96]
+name = "Crash 3 Bow Tip"
+tag = "crash.3.bow.tip"
+
+[notes.97]
+name = "Crash 3 Bell"
+tag = "crash.3.bell"
+
+[notes.98]
+name = "Crash 3"
+tag = "crash.3.2"
+
+[notes.99]
+name = "Crash 3 Bow"
+tag = "crash.3.bow"
+
+[notes.100]
+name = "Crash 3 Bell Tip"
+tag = "crash.3.bell.tip"
+
+[notes.101]
+name = "Crash 4 Bow Tip"
+tag = "crash.4.bow.tip.2"
+
+[notes.102]
+name = "Crash 4 Bell"
+tag = "crash.4.bell.2"
+
+[notes.103]
+name = "Crash 4"
+tag = "crash.4.2"
+
+[notes.104]
+name = "Crash 4 Bow"
+tag = "crash.4.bow"
+
+[notes.105]
+name = "Crash 4 Bell Tip"
+tag = "crash.4.bell.tip"
+
+[notes.106]
+name = "Crash 4 (Mute)"
+tag = "crash.4.mute.2"
+
+[notes.107]
+name = "China 1 (Mute)"
+tag = "china.1.mute.2"
+
+[notes.108]
+name = "China 1 Bow Tip"
+tag = "china.1.bow.tip"
+
+[notes.109]
+name = "China 1 Bell"
+tag = "china.1.bell"
+
+[notes.110]
+name = "China 1"
+tag = "china.1.2"
+
+[notes.111]
+name = "China 1 Bow"
+tag = "china.1.bow"
+
+[notes.112]
+name = "China 1 Bell Tip"
+tag = "china.1.bell.tip"
+
+[notes.113]
+name = "Ride Bow Tip"
+tag = "ride.bow.tip.2"
+
+[notes.114]
+name = "Ride Bell"
+tag = "ride.bell.2"
+
+[notes.115]
+name = "Ride Edge"
+tag = "ride.edge.2"
+
+[notes.116]
+name = "Ride"
+tag = "ride.1.2"
+
+[notes.117]
+name = "Ride Bell Tip"
+tag = "ride.bell.tip.2"
+
+[notes.118]
+name = "Ride (Mute)"
+tag = "ride.mute"
+
+# Percussion
+[notes.65]
+name = "Percussion"
+tag = "percussion.1"
+
+# Documented fallback rules (SPEC §3.3): fold duplicate triggers to the
+# primary notes and collapse the deep hat ladder and cross-family cymbals
+# when converting FROM SD3. Mutes/ladder subtleties are handled by the
+# generic parent-walk.
+[fallback]
+
+[[fallback.rules]]
+from = "kick.2"
+to = "kick.1"
+
+[[fallback.rules]]
+from = "kick.3"
+to = "kick.1"
+
+[[fallback.rules]]
+from = "snare.center.2"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.center.3"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.center.4"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.center.5"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.center.6"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.center.7"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.sidestick.2"
+to = "snare.sidestick"
+
+[[fallback.rules]]
+from = "snare.sidestick.3"
+to = "snare.sidestick"
+
+[[fallback.rules]]
+from = "snare.sidestick.4"
+to = "snare.sidestick"
+
+[[fallback.rules]]
+from = "snare.flam"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.ruff"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "hihat.closed.tip.2"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.closed.tip.3"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.pedal.2"
+to = "hihat.pedal"
+
+[[fallback.rules]]
+from = "hihat.pedal.3"
+to = "hihat.pedal"
+
+[[fallback.rules]]
+from = "hihat.cc.edge.2"
+to = "hihat.cc.edge"
+
+[[fallback.rules]]
+from = "hihat.cc.tip.2"
+to = "hihat.cc.tip"
+
+[[fallback.rules]]
+from = "hihat.cc.bell.2"
+to = "hihat.cc.bell"
+
+[[fallback.rules]]
+from = "hihat.open.2.edge.2"
+to = "hihat.open.2.edge"
+
+[[fallback.rules]]
+from = "hihat.open.4.tip"
+to = "hihat.open.3.tip"
+
+[[fallback.rules]]
+from = "hihat.open.5.tip"
+to = "hihat.open.3.tip"
+
+[[fallback.rules]]
+from = "hihat.open.4.edge"
+to = "hihat.open.3.edge"
+
+[[fallback.rules]]
+from = "hihat.open.4.bell"
+to = "hihat.open.3.bell"
+
+[[fallback.rules]]
+from = "crash.2.2"
+to = "crash.2"
+
+[[fallback.rules]]
+from = "crash.3.2"
+to = "crash.3"
+
+[[fallback.rules]]
+from = "crash.4.2"
+to = "crash.4"
+
+[[fallback.rules]]
+from = "ride.1.2"
+to = "ride.1"
+
+[[fallback.rules]]
+from = "china.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "china.1.2"
+to = "crash.1"

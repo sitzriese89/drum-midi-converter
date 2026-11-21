@@ -609,10 +609,11 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert!(matches!(drums[0], MidiMessage::NoteOn { key, .. } if key.as_int() == 36));
+        // kick.1: GM 36 -> Invasion 24 (low register).
+        assert!(matches!(drums[0], MidiMessage::NoteOn { key, .. } if key.as_int() == 24));
         let kick = report.rows.iter().find(|r| r.source_note == 36).unwrap();
-        assert_eq!(kick.target_note, Some(36));
-        assert_eq!(kick.target_name.as_deref(), Some("Kick In"));
+        assert_eq!(kick.target_note, Some(24));
+        assert_eq!(kick.target_name.as_deref(), Some("Kick"));
         assert!(!kick.unmapped);
     }
 
