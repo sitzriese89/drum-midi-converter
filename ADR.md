@@ -15,6 +15,9 @@ Rationale: with 7 built-in maps, hand-authoring every directed pair means
 tables instead of O(N), and custom user maps (Q6) get conversions to every
 built-in for free.
 
+Note: a tag's dot-separated segments may themselves contain hyphens
+(e.g. `tom.mid-low`).
+
 ## ADR-002 — Pure Rust core compiled to WASM; Tauri is filesystem-only (Q7)
 
 Mirrors chords-and-scales: `crates/drum-map` holds all logic, compiled to
