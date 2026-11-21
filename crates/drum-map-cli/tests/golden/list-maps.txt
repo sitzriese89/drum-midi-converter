@@ -1,0 +1,8 @@
+ID                     NAME                                         VENDOR         NOTES
+gm                     General MIDI                                 MMA               47
+ggd-invasion           GetGood Drums Invasion                       GetGood Drums     47
+ggd-modern-massive     GetGood Drums Modern & Massive (P IV/P V)    GetGood Drums     28
+ggd-okw-modern-fusion  GetGood Drums One Kit Wonder: Modern Fusion  GetGood Drums     26
+sd3                    Superior Drummer 3                           Toontrack        122
+ezd3                   EZdrummer 3                                  Toontrack         51
+rs-drums-fairview      RS Drums Fairview                            RS Drums          44

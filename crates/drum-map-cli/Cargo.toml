@@ -14,3 +14,6 @@ path = "src/main.rs"
 drum-map.workspace = true
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+midly.workspace = true
