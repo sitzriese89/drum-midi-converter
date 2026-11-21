@@ -1,6 +1,6 @@
 # Roadmap — drum-midi-converter
 
-Status: M1 done. Next: M2 (CLI).
+Status: M2 done. Next: M3 (frontend + Tauri).
 
 ## M0 — Repository skeleton
 
@@ -23,9 +23,10 @@ Status: M1 done. Next: M2 (CLI).
 
 ## M2 — CLI (`crates/drum-map-cli`)
 
-- [ ] `drum-midi-converter in.mid --from <map> --to <map> -o out.mid`
-- [ ] `--report` prints the conversion report; `--list-maps`
-- [ ] Snapshot tests on fixture MIDI files
+- [x] `drum-midi-converter in.mid --from <map> --to <map> -o out.mid`
+- [x] `--report` prints the conversion report; `--list-maps`
+- [x] `--unmapped keep|drop|reassign=N` (Q3 resolution exposure)
+- [x] Snapshot tests on fixture MIDI files (golden files, 11 integration tests)
 
 ## M3 — Frontend + Tauri (mirrors chords-and-scales)
 
