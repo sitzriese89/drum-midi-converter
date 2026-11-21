@@ -1,0 +1,133 @@
+# GetGood Drums One Kit Wonder: Modern Fusion drum map — default 'Invasion' mapping.
+# Source: UNOFFICIAL, compiled from https://drumverter.com/engines/ggd-modernfusion/
+# (GGD publishes no numbered note chart; see data/research/vendor-maps.md §3a).
+# Tags follow docs/tag-taxonomy.md.
+
+id = "ggd-okw-modern-fusion"
+name = "GetGood Drums One Kit Wonder: Modern Fusion"
+vendor = "GetGood Drums"
+description = "One Kit Wonder: Modern Fusion (default 'Invasion' mapping). Shares the Invasion low-register layout (kick 24, toms from 33). Other OKW editions (Metal, Nu Metal, ...) exist with slightly different maps and may be added later."
+
+[notes.24]
+name = "Kick"
+tag = "kick.1"
+
+[notes.26]
+name = "Snare"
+tag = "snare.center"
+
+[notes.30]
+name = "Side Stick"
+tag = "snare.sidestick"
+
+[notes.33]
+name = "Rack Tom 1"
+tag = "tom.rack.1"
+
+[notes.34]
+name = "Rack Tom 2"
+tag = "tom.rack.2"
+
+[notes.35]
+name = "Floor Tom 1"
+tag = "tom.floor.1"
+
+[notes.17]
+name = "Hi-Hat CC"
+tag = "hihat.cc"
+
+[notes.41]
+name = "Hi-Hat Tight Tip"
+tag = "hihat.tight.tip"
+
+[notes.42]
+name = "Hi-Hat Tight Edge"
+tag = "hihat.tight.edge"
+
+[notes.43]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip"
+
+[notes.44]
+name = "Hi-Hat Closed Edge"
+tag = "hihat.closed.edge"
+
+[notes.45]
+name = "Hi-Hat Open 1"
+tag = "hihat.open.1"
+
+[notes.46]
+name = "Hi-Hat Open 2"
+tag = "hihat.open.2"
+
+[notes.47]
+name = "Hi-Hat Open 3"
+tag = "hihat.open.3"
+
+[notes.48]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal"
+
+[notes.52]
+name = "Crash 1"
+tag = "crash.1"
+
+[notes.53]
+name = "Crash 1 (Mute)"
+tag = "crash.1.mute"
+
+[notes.54]
+name = "Crash 2"
+tag = "crash.2"
+
+[notes.55]
+name = "Crash 2 (Mute)"
+tag = "crash.2.mute"
+
+[notes.61]
+name = "Ride Bell"
+tag = "ride.bell"
+
+[notes.62]
+name = "Ride"
+tag = "ride.1"
+
+[notes.65]
+name = "China 1"
+tag = "china.1"
+
+[notes.66]
+name = "China 1 (Mute)"
+tag = "china.1.mute"
+
+[notes.73]
+name = "Splash 1"
+tag = "splash.1"
+
+[notes.74]
+name = "Splash 1 (Mute)"
+tag = "splash.1.mute"
+
+[notes.78]
+name = "Stack 1"
+tag = "stack.1"
+
+# Documented fallback rules (SPEC §3.3): cross-family collapses and
+# alternate-trigger fold-ins when converting FROM Modern Fusion.
+[fallback]
+
+[[fallback.rules]]
+from = "hihat.cc"
+to = "hihat.closed"
+
+[[fallback.rules]]
+from = "china.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "splash.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "stack.1"
+to = "crash.1"

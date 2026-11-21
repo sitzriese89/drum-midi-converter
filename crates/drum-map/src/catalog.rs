@@ -22,6 +22,20 @@ pub const EMBEDDED_MAPS: &[(&str, &str)] = &[
         "ggd-invasion.toml",
         include_str!("../../../data/maps/ggd-invasion.toml"),
     ),
+    (
+        "ggd-modern-massive.toml",
+        include_str!("../../../data/maps/ggd-modern-massive.toml"),
+    ),
+    (
+        "ggd-okw-modern-fusion.toml",
+        include_str!("../../../data/maps/ggd-okw-modern-fusion.toml"),
+    ),
+    ("sd3.toml", include_str!("../../../data/maps/sd3.toml")),
+    ("ezd3.toml", include_str!("../../../data/maps/ezd3.toml")),
+    (
+        "rs-drums-fairview.toml",
+        include_str!("../../../data/maps/rs-drums-fairview.toml"),
+    ),
 ];
 
 /// All embedded per-pair override tables as `(file_name, toml_text)` pairs.
@@ -101,16 +115,31 @@ mod tests {
     }
 
     #[test]
-    fn catalog_contains_placeholder_invasion_map() {
+    fn catalog_contains_exactly_seven_maps() {
         let maps = catalog().unwrap();
-        let inv = maps.iter().find(|m| m.id == "ggd-invasion").unwrap();
-        assert!(
-            inv.description
-                .as_deref()
-                .unwrap_or("")
-                .contains("PLACEHOLDER")
+        assert_eq!(maps.len(), 7);
+        let ids: Vec<&str> = maps.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(
+            ids,
+            [
+                "gm",
+                "ggd-invasion",
+                "ggd-modern-massive",
+                "ggd-okw-modern-fusion",
+                "sd3",
+                "ezd3",
+                "rs-drums-fairview",
+            ]
         );
-        assert!(inv.notes.len() < 10);
+        for map in &maps {
+            assert!(!map.notes.is_empty(), "map {} has no notes", map.id);
+            assert!(map.name.contains(' '), "map {} has a display name", map.id);
+            assert!(!map.vendor.is_empty(), "map {} has a vendor", map.id);
+        }
+        // Spot-check the new full maps.
+        let inv = maps.iter().find(|m| m.id == "ggd-invasion").unwrap();
+        assert_eq!(inv.notes.len(), 47);
+        assert!(inv.note(24).is_some());
     }
 
     #[test]

@@ -1,0 +1,154 @@
+# GetGood Drums Modern & Massive (P IV / P V) drum map — 'GGD' preset mapping.
+# Source: UNOFFICIAL, compiled from https://drumverter.com/engines/ggd-modernmassive-ggd/
+# (GGD publishes no numbered note chart; see data/research/vendor-maps.md §2a).
+# Tags follow docs/tag-taxonomy.md. The engine also ships 'GM' and 'Halpern'
+# preset mappings; Modern & Massive 2 has its own default map (not yet included).
+
+id = "ggd-modern-massive"
+name = "GetGood Drums Modern & Massive (P IV/P V)"
+vendor = "GetGood Drums"
+description = "Modern & Massive (P IV/P V), 'GGD' preset mapping. GM-style low register (kick 36, snare 37). Hats have no tip/edge split here. The engine also ships 'GM' and 'Halpern' preset mappings; Modern & Massive 2 has its own default map (not yet included)."
+
+[notes.36]
+name = "Kick"
+tag = "kick.1"
+
+[notes.37]
+name = "Snare"
+tag = "snare.center"
+
+[notes.38]
+name = "Snare Flam"
+tag = "snare.flam"
+
+[notes.39]
+name = "Snare Ruff"
+tag = "snare.ruff"
+
+[notes.40]
+name = "Side Stick"
+tag = "snare.sidestick"
+
+[notes.41]
+name = "Snare (Off)"
+tag = "snare.off"
+
+[notes.42]
+name = "Rack Tom 1"
+tag = "tom.rack.1"
+
+[notes.43]
+name = "Floor Tom 1"
+tag = "tom.floor.1"
+
+[notes.45]
+name = "Floor Tom 1"
+tag = "tom.floor.1.2"
+
+[notes.46]
+name = "Floor Tom 2"
+tag = "tom.floor.2"
+
+[notes.48]
+name = "Hi-Hat Tight"
+tag = "hihat.tight"
+
+[notes.49]
+name = "Hi-Hat Closed"
+tag = "hihat.closed"
+
+[notes.52]
+name = "Hi-Hat Open 2"
+tag = "hihat.open.2"
+
+[notes.53]
+name = "Hi-Hat Open 3"
+tag = "hihat.open.3"
+
+[notes.54]
+name = "Hi-Hat Open 4"
+tag = "hihat.open.4"
+
+[notes.55]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal"
+
+[notes.57]
+name = "Hi-Hat Pedal Splash"
+tag = "hihat.pedal.splash"
+
+[notes.58]
+name = "Crash 1"
+tag = "crash.1"
+
+[notes.59]
+name = "Crash 1 (Mute)"
+tag = "crash.1.mute"
+
+[notes.61]
+name = "Crash 2"
+tag = "crash.2"
+
+[notes.62]
+name = "Crash 2 (Mute)"
+tag = "crash.2.mute"
+
+[notes.71]
+name = "China 1"
+tag = "china.1"
+
+[notes.72]
+name = "China 1 (Mute)"
+tag = "china.1.mute"
+
+[notes.73]
+name = "Ride"
+tag = "ride.1"
+
+[notes.74]
+name = "Ride Bell"
+tag = "ride.bell"
+
+[notes.76]
+name = "Ride Edge"
+tag = "ride.edge"
+
+[notes.77]
+name = "Splash 1"
+tag = "splash.1"
+
+[notes.83]
+name = "Splash 1 (Mute)"
+tag = "splash.1.mute"
+
+# Documented fallback rules (SPEC §3.3): cross-family collapses and
+# duplicate/alternate-trigger fold-ins when converting FROM Modern & Massive.
+[fallback]
+
+[[fallback.rules]]
+from = "snare.flam"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.ruff"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.off"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "tom.floor.1.2"
+to = "tom.floor.1"
+
+[[fallback.rules]]
+from = "hihat.open.4"
+to = "hihat.open.3"
+
+[[fallback.rules]]
+from = "china.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "splash.1"
+to = "crash.1"

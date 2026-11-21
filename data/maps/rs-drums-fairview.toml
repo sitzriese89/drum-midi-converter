@@ -1,0 +1,247 @@
+# RS Drums Fairview drum map.
+# Source: UNOFFICIAL, compiled from https://drumverter.com/engines/rsdrums-fairview/
+# (RS Drums publishes no numbered note chart; see data/research/vendor-maps.md §6a).
+# Tags follow docs/tag-taxonomy.md. Note the vendor's unusual tom naming:
+# "Floor Tom 1..4" and "Rack Tom 1/2" at 38/37 — tom tags are ranked by the
+# vendor's own numbering, not by note order.
+
+id = "rs-drums-fairview"
+name = "RS Drums Fairview"
+vendor = "RS Drums"
+description = "RS Drums Fairview. Unusual tom naming: Floor Tom 1..4 and Rack Tom 1/2 at 38/37, ranked by the vendor's own numbering rather than note order. Kick 24 and toms from 33 (Invasion-style low register). Aux hat notes 48/67-72 second-hat articulations."
+
+[notes.24]
+name = "Kick"
+tag = "kick.1"
+
+[notes.26]
+name = "Snare"
+tag = "snare.center"
+
+[notes.27]
+name = "Snare Flam"
+tag = "snare.flam"
+
+[notes.28]
+name = "Snare Rimshot"
+tag = "snare.rimshot"
+
+[notes.30]
+name = "Side Stick"
+tag = "snare.sidestick"
+
+# Toms — ranked by the vendor's numbering: Floor Tom 1..4, Rack Tom 1/2.
+[notes.33]
+name = "Floor Tom 2"
+tag = "tom.floor.2"
+
+[notes.34]
+name = "Floor Tom 4"
+tag = "tom.floor.4"
+
+[notes.35]
+name = "Floor Tom 1"
+tag = "tom.floor.1"
+
+[notes.36]
+name = "Floor Tom 3"
+tag = "tom.floor.3"
+
+[notes.37]
+name = "Rack Tom 2"
+tag = "tom.rack.2"
+
+[notes.38]
+name = "Rack Tom 1"
+tag = "tom.rack.1"
+
+# Hi-hat
+[notes.40]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal"
+
+[notes.41]
+name = "Hi-Hat Tight Tip"
+tag = "hihat.tight.tip"
+
+[notes.42]
+name = "Hi-Hat Tight Edge"
+tag = "hihat.tight.edge"
+
+[notes.43]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip"
+
+[notes.44]
+name = "Hi-Hat Closed Edge"
+tag = "hihat.closed.edge"
+
+[notes.45]
+name = "Hi-Hat Open 1"
+tag = "hihat.open.1"
+
+[notes.46]
+name = "Hi-Hat Open 2"
+tag = "hihat.open.2"
+
+[notes.47]
+name = "Hi-Hat Open 3"
+tag = "hihat.open.3"
+
+[notes.69]
+name = "Hi-Hat Pedal Splash"
+tag = "hihat.pedal.splash"
+
+# Aux hat
+[notes.48]
+name = "Aux Hat 1 Open 3"
+tag = "hihat.aux.1.open.3"
+
+[notes.67]
+name = "Aux Hat 1 Tight Tip"
+tag = "hihat.aux.1.tight.tip"
+
+[notes.68]
+name = "Aux Hat 1 Tight Edge"
+tag = "hihat.aux.1.tight.edge"
+
+[notes.70]
+name = "Aux Hat 1 Closed Tip"
+tag = "hihat.aux.1.closed.tip"
+
+[notes.71]
+name = "Aux Hat 1 Closed Edge"
+tag = "hihat.aux.1.closed.edge"
+
+[notes.72]
+name = "Aux Hat 1 Open 1"
+tag = "hihat.aux.1.open.1"
+
+# Cymbals
+[notes.49]
+name = "Crash 1"
+tag = "crash.1"
+
+[notes.50]
+name = "Crash 1 (Mute)"
+tag = "crash.1.mute"
+
+[notes.51]
+name = "Splash 1"
+tag = "splash.1"
+
+[notes.52]
+name = "Stack 2"
+tag = "stack.2"
+
+[notes.53]
+name = "Splash 2"
+tag = "splash.2"
+
+[notes.54]
+name = "Crash 2"
+tag = "crash.2"
+
+[notes.55]
+name = "Crash 2 (Mute)"
+tag = "crash.2.mute"
+
+[notes.56]
+name = "China 2"
+tag = "china.2"
+
+[notes.57]
+name = "China 2 (Mute)"
+tag = "china.2.mute"
+
+[notes.58]
+name = "China 1"
+tag = "china.1"
+
+[notes.59]
+name = "China 1 (Mute)"
+tag = "china.1.mute"
+
+[notes.60]
+name = "Stack 1"
+tag = "stack.1"
+
+[notes.61]
+name = "Ride Bell"
+tag = "ride.bell"
+
+[notes.62]
+name = "Ride"
+tag = "ride.1"
+
+[notes.63]
+name = "Ride Bow Tip"
+tag = "ride.bow.tip"
+
+[notes.64]
+name = "Splash 1 (Mute)"
+tag = "splash.1.mute"
+
+[notes.65]
+name = "Splash 2 (Mute)"
+tag = "splash.2.mute"
+
+[notes.66]
+name = "Stack 1 (Mute)"
+tag = "stack.1.mute"
+
+# Documented fallback rules (SPEC §3.3): cross-family collapses and aux-hat
+# fold-ins when converting FROM Fairview. Mutes are handled by the parent-walk.
+[fallback]
+
+[[fallback.rules]]
+from = "snare.flam"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "hihat.aux.1.tight.tip"
+to = "hihat.tight.tip"
+
+[[fallback.rules]]
+from = "hihat.aux.1.tight.edge"
+to = "hihat.tight.edge"
+
+[[fallback.rules]]
+from = "hihat.aux.1.closed.tip"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.aux.1.closed.edge"
+to = "hihat.closed.edge"
+
+[[fallback.rules]]
+from = "hihat.aux.1.open.1"
+to = "hihat.open.1"
+
+[[fallback.rules]]
+from = "hihat.aux.1.open.3"
+to = "hihat.open.3"
+
+[[fallback.rules]]
+from = "china.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "china.2"
+to = "crash.2"
+
+[[fallback.rules]]
+from = "splash.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "splash.2"
+to = "crash.2"
+
+[[fallback.rules]]
+from = "stack.1"
+to = "crash.1"
+
+[[fallback.rules]]
+from = "stack.2"
+to = "crash.2"

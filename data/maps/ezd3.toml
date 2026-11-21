@@ -1,0 +1,293 @@
+# Toontrack EZdrummer 3 drum map — default "GM Extended" mapping.
+# Source: UNOFFICIAL, compiled from https://drumverter.com/engines/ezdrummer/
+# plus the low-register hi-hat subset read from the official Toontrack CDN
+# chart image (https://cdn.toontrack.com/app/uploads/png/ezd3_midimapping_304.png).
+# The low-register hat notes come from an UNOFFICIAL reading of that official
+# image; the two sources agree where they overlap (notes 21-26, 42, 44, 46,
+# 61-65). See data/research/vendor-maps.md §5.
+# Tags follow docs/tag-taxonomy.md.
+
+id = "ezd3"
+name = "EZdrummer 3"
+vendor = "Toontrack"
+description = "EZdrummer 3 default 'GM Extended' mapping. Shares most GM notes with SD3 but places Ride Edge on 52 (no china in the standard map) and Splash on 55. Low-register hat notes come from an unofficial reading of the official Toontrack chart image."
+
+# Percussion / extras
+[notes.1]
+name = "Clap"
+tag = "clap.1"
+
+[notes.2]
+name = "Shaker"
+tag = "shaker.1"
+
+[notes.3]
+name = "Tambourine"
+tag = "percussion.tambourine"
+
+# Kick
+[notes.34]
+name = "Kick"
+tag = "kick.2"
+
+[notes.35]
+name = "Kick"
+tag = "kick.3"
+
+[notes.36]
+name = "Kick"
+tag = "kick.1"
+
+# Snare
+[notes.6]
+name = "Snare"
+tag = "snare.center.2"
+
+[notes.33]
+name = "Snare (Side)"
+tag = "snare.side"
+
+[notes.37]
+name = "Side Stick"
+tag = "snare.sidestick"
+
+[notes.38]
+name = "Snare"
+tag = "snare.center"
+
+[notes.39]
+name = "Snare Ruff"
+tag = "snare.ruff"
+
+[notes.40]
+name = "Snare Rimshot"
+tag = "snare.rimshot"
+
+# Toms
+[notes.41]
+name = "Floor Tom 2"
+tag = "tom.floor.2"
+
+[notes.43]
+name = "Floor Tom 1"
+tag = "tom.floor.1"
+
+[notes.45]
+name = "Rack Tom 3"
+tag = "tom.rack.3"
+
+[notes.47]
+name = "Rack Tom 2"
+tag = "tom.rack.2"
+
+[notes.48]
+name = "Rack Tom 1"
+tag = "tom.rack.1"
+
+# Hi-hat: low-register ladder (7-17, 22-26, from the chart image reading),
+# GM-register notes 21/42/44/46, and the upper-register strokes 61-65.
+[notes.7]
+name = "Hi-Hat CC Edge"
+tag = "hihat.cc.edge"
+
+[notes.8]
+name = "Hi-Hat CC Tip"
+tag = "hihat.cc.tip"
+
+[notes.9]
+name = "Hi-Hat CC Bell"
+tag = "hihat.cc.bell"
+
+[notes.10]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal.3"
+
+[notes.11]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip.3"
+
+[notes.12]
+name = "Hi-Hat Loose Tip"
+tag = "hihat.loose.tip"
+
+[notes.13]
+name = "Hi-Hat Open 1 Tip"
+tag = "hihat.open.1.tip"
+
+[notes.14]
+name = "Hi-Hat Open 2 Tip"
+tag = "hihat.open.2.tip"
+
+[notes.15]
+name = "Hi-Hat Open 3 Tip"
+tag = "hihat.open.3.tip"
+
+[notes.16]
+name = "Hi-Hat Open 4 Tip"
+tag = "hihat.open.4.tip"
+
+[notes.17]
+name = "Hi-Hat Open 5 Tip"
+tag = "hihat.open.5.tip"
+
+[notes.21]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal"
+
+[notes.22]
+name = "Hi-Hat Closed Edge"
+tag = "hihat.closed.edge.2"
+
+[notes.23]
+name = "Hi-Hat Pedal Splash"
+tag = "hihat.pedal.splash"
+
+[notes.24]
+name = "Hi-Hat Open 1"
+tag = "hihat.open.1.edge"
+
+[notes.25]
+name = "Hi-Hat Open 2"
+tag = "hihat.open.2.edge"
+
+[notes.26]
+name = "Hi-Hat Open 3"
+tag = "hihat.open.3.edge"
+
+[notes.42]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip"
+
+[notes.44]
+name = "Hi-Hat Pedal"
+tag = "hihat.pedal.2"
+
+[notes.46]
+name = "Hi-Hat Open 2"
+tag = "hihat.open.2"
+
+[notes.61]
+name = "Hi-Hat Closed Tip"
+tag = "hihat.closed.tip.2"
+
+[notes.62]
+name = "Hi-Hat Tight Edge"
+tag = "hihat.tight.edge"
+
+[notes.63]
+name = "Hi-Hat Tight Tip"
+tag = "hihat.tight.tip"
+
+[notes.64]
+name = "Hi-Hat Loose"
+tag = "hihat.loose"
+
+[notes.65]
+name = "Hi-Hat Closed Edge"
+tag = "hihat.closed.edge"
+
+# Cymbals
+[notes.49]
+name = "Crash 2"
+tag = "crash.2"
+
+[notes.51]
+name = "Ride Bow Tip"
+tag = "ride.bow.tip"
+
+[notes.52]
+name = "Ride Edge"
+tag = "ride.edge"
+
+[notes.53]
+name = "Ride Bell"
+tag = "ride.bell"
+
+[notes.54]
+name = "Ride (Mute)"
+tag = "ride.mute"
+
+[notes.55]
+name = "Splash 1"
+tag = "splash.1"
+
+[notes.57]
+name = "Crash 3"
+tag = "crash.3"
+
+[notes.59]
+name = "Ride Edge"
+tag = "ride.edge.2"
+
+[notes.86]
+name = "Crash 1"
+tag = "crash.1"
+
+# Documented fallback rules (SPEC §3.3): fold duplicate triggers to the
+# primary notes and collapse the deep hat ladder and cross-family cymbals
+# when converting FROM EZdrummer 3. Mutes are handled by the parent-walk.
+[fallback]
+
+[[fallback.rules]]
+from = "kick.2"
+to = "kick.1"
+
+[[fallback.rules]]
+from = "kick.3"
+to = "kick.1"
+
+[[fallback.rules]]
+from = "snare.center.2"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "snare.ruff"
+to = "snare.center"
+
+[[fallback.rules]]
+from = "hihat.pedal.2"
+to = "hihat.pedal"
+
+[[fallback.rules]]
+from = "hihat.pedal.3"
+to = "hihat.pedal"
+
+[[fallback.rules]]
+from = "hihat.closed.tip.2"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.closed.tip.3"
+to = "hihat.closed.tip"
+
+[[fallback.rules]]
+from = "hihat.closed.edge.2"
+to = "hihat.closed.edge"
+
+[[fallback.rules]]
+from = "hihat.open.4.tip"
+to = "hihat.open.3.tip"
+
+[[fallback.rules]]
+from = "hihat.open.5.tip"
+to = "hihat.open.3.tip"
+
+[[fallback.rules]]
+from = "hihat.cc.edge"
+to = "hihat.closed"
+
+[[fallback.rules]]
+from = "hihat.cc.tip"
+to = "hihat.closed"
+
+[[fallback.rules]]
+from = "hihat.cc.bell"
+to = "hihat.closed"
+
+[[fallback.rules]]
+from = "ride.edge.2"
+to = "ride.edge"
+
+[[fallback.rules]]
+from = "splash.1"
+to = "crash.1"

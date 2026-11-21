@@ -72,28 +72,46 @@ mod tests {
         }
     }
 
-    /// Built-in GM -> placeholder Invasion: shared notes map exactly.
+    /// Built-in GM -> Invasion: shared notes map exactly.
     #[test]
     fn gm_to_invasion_converts_common_notes() {
         let maps = catalog().unwrap();
         let gm = maps.iter().find(|m| m.id == "gm").unwrap();
         let inv = maps.iter().find(|m| m.id == "ggd-invasion").unwrap();
         let mapping = build_mapping(gm, inv, None);
-        assert_eq!(mapping.get(&36).unwrap().target, 36); // kick.1
-        assert_eq!(mapping.get(&42).unwrap().target, 42); // hihat.closed
-        assert!(!mapping.get(&42).unwrap().lossy);
-        assert_eq!(mapping.get(&49).unwrap().target, 49); // crash.1
-        // GM 38 is snare.acoustic; the placeholder has no matching tag.
+        // kick.1: GM 36 -> Invasion 24 (low register).
+        assert_eq!(mapping.get(&36).unwrap().target, 24);
+        assert_eq!(inv.note(24).unwrap().name, "Kick");
+        // crash.1: GM 49 -> Invasion 52.
+        assert_eq!(mapping.get(&49).unwrap().target, 52);
+        // GM 42 hihat.closed has no match in Invasion (tips/edges only) and
+        // the parent-walk stops at the bare `hihat` family.
+        assert!(!mapping.contains_key(&42));
+        // GM 38 is snare.acoustic; Invasion has no matching tag.
         assert!(!mapping.contains_key(&38));
         assert!(!mapping.contains_key(&56)); // cowbell unmapped
     }
 
-    /// Detection on GM-style usage hints at the GM map.
+    /// Detection on GM-style usage: every note is covered by several maps
+    /// (GM, SD3 and Fairview all span 36/38/42/46/49/56), so the confidence
+    /// ties at 1.0 and the specificity tie-break ranks the most detailed
+    /// map first. Maps with partial coverage must rank strictly lower.
     #[test]
-    fn detect_ranks_gm_for_gm_notes() {
+    fn detect_full_coverage_ties_break_by_specificity() {
         let maps = catalog().unwrap();
         let cands = detect::detect(&[36, 38, 42, 46, 49, 56], &maps);
-        assert_eq!(cands[0].map_id, "gm");
-        assert!(cands[0].coverage > cands[1].coverage);
+        assert_eq!(cands[0].coverage, 1.0);
+        let top = cands[0].specificity;
+        assert!(
+            cands
+                .iter()
+                .filter(|c| c.coverage == 1.0)
+                .all(|c| c.specificity <= top)
+        );
+        // Partial-coverage maps score strictly below full coverage.
+        assert!(cands[0].coverage > cands.last().unwrap().coverage);
+        // GM itself covers every GM-style note used here.
+        let gm = cands.iter().find(|c| c.map_id == "gm").unwrap();
+        assert_eq!(gm.coverage, 1.0);
     }
 }
