@@ -9,11 +9,13 @@ mod catalog;
 mod convert;
 mod detect;
 mod meta;
+mod user_maps;
 
 pub use catalog::{list_maps, map_notes};
 pub use convert::convert_midi;
 pub use detect::{detect_hints, source_coverage};
 pub use meta::version;
+pub use user_maps::{builtin_map, map_to_toml, parse_map_toml, validate_map};
 
 /// Serialize a value into a plain, JSON-compatible JS value.
 fn to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsError> {
@@ -84,6 +86,72 @@ export interface ConvertResult {
   midi: Uint8Array;
   /** The conversion report. */
   report: Report;
+}
+
+/** One note of a map under construction (map editor, SPEC 3.4). */
+export interface MapNote {
+  /** MIDI note number (0-127). */
+  note: number;
+  /** Display name, e.g. `Kick In`. */
+  name: string;
+  /** Semantic tag text (ADR-001 vocabulary), e.g. `kick.1`. */
+  tag: string;
+}
+
+/** One fallback rule of a map under construction. */
+export interface MapFallbackRule {
+  /** The source articulation that is being collapsed. */
+  from: string;
+  /** The less specific articulation to try instead. */
+  to: string;
+}
+
+/** A map under construction, as the editor keeps and sends it in. */
+export interface MapInput {
+  /** Stable id, also the file name in the app-data folder. */
+  id: string;
+  /** Display name. */
+  name: string;
+  /** Vendor. */
+  vendor: string;
+  /** Free-form description, null when empty. */
+  description: string | null;
+  /** Note entries. */
+  notes: MapNote[];
+  /** Documented fallback rules; null when the map has none. */
+  fallback: MapFallbackRule[] | null;
+}
+
+/** A validated map: notes sorted ascending by note number. */
+export interface MapFull {
+  /** Stable id, also the file name in the app-data folder. */
+  id: string;
+  /** Display name. */
+  name: string;
+  /** Vendor. */
+  vendor: string;
+  /** Free-form description, null when empty. */
+  description: string | null;
+  /** Note entries, sorted ascending by note number. */
+  notes: MapNote[];
+  /** Documented fallback rules; null when the map has none. */
+  fallback: MapFallbackRule[] | null;
+}
+
+/** One validation problem, naming the field it concerns. */
+export interface MapIssue {
+  /** The field: `id`, `notes.36.tag`, `fallback.rules[1].from`, `toml` for a parse error. */
+  field: string;
+  /** The full problem message. */
+  message: string;
+}
+
+/** What parsing or validating a map produced; `map` is null when invalid. */
+export interface MapParseResult {
+  /** The validated map, or null when there are issues. */
+  map: MapFull | null;
+  /** Every problem found, field-by-field where possible. */
+  issues: MapIssue[];
 }
 "#;
 

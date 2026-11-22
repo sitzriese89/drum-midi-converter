@@ -50,9 +50,9 @@ export class Converter {
   /** True when the file's used notes don't all fit the chosen source map. */
   mismatch = $derived(this.coverage !== null && this.coverage < 1.0);
 
-  /** Loads the catalog once at startup. */
-  async loadCatalog() {
-    this.maps = await listMaps();
+  /** Loads the catalog once at startup; `extra` are the user's own maps (SPEC §3.4). */
+  async loadCatalog(extra: MapInfo[] = []) {
+    this.maps = [...(await listMaps()), ...extra];
     if (!this.fromId) {
       this.fromId = this.maps[0]?.id ?? '';
     }
