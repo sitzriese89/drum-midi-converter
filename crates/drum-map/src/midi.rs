@@ -211,6 +211,32 @@ pub fn rewrite_notes(
     Ok((out, report))
 }
 
+/// Distinct MIDI note numbers played (velocity > 0 note-ons) on drum tracks.
+///
+/// Powers the detection heuristic (SPEC §4.1): the WASM bindings and CLI
+/// feed this to [`crate::detect::detect`] and to the source-map coverage
+/// check. Notes are sorted and deduplicated.
+pub fn used_drum_notes(smf_bytes: &[u8]) -> Result<Vec<u8>, MidiError> {
+    let smf = Smf::parse(smf_bytes)?;
+    let mut used: Vec<u8> = smf
+        .tracks
+        .iter()
+        .filter(|track| is_drum_track(track))
+        .flat_map(|track| {
+            track.iter().filter_map(|event| match event.kind {
+                TrackEventKind::Midi { message, .. } => match message {
+                    MidiMessage::NoteOn { key, vel } if vel.as_int() > 0 => Some(key.as_int()),
+                    _ => None,
+                },
+                _ => None,
+            })
+        })
+        .collect();
+    used.sort_unstable();
+    used.dedup();
+    Ok(used)
+}
+
 /// High-level conversion entry point (SPEC §4.2).
 ///
 /// Takes SMF bytes, the source map, the target map, an optional per-pair
@@ -594,6 +620,15 @@ mod tests {
         .write(&mut bytes)
         .unwrap();
         bytes
+    }
+
+    #[test]
+    fn used_drum_notes_scans_drum_tracks_only() {
+        let smf = build_smf();
+        // 36 and 56 from the drum track; the velocity-0 note-on on 38 is a
+        // note-off, and the melody track's 60 must not appear.
+        assert_eq!(used_drum_notes(&smf).unwrap(), vec![36, 56]);
+        assert!(used_drum_notes(&[0u8; 4]).is_err());
     }
 
     #[test]
