@@ -3,11 +3,15 @@
 // module keeps the Rust snake_case names; the camelCase aliases below are the app's API.
 import init from './wasm/drum_map_wasm.js';
 import {
+  builtin_map,
   convert_midi,
   detect_hints,
   list_maps,
   map_notes,
+  map_to_toml,
+  parse_map_toml,
   source_coverage,
+  validate_map,
   version as versionRaw,
 } from './wasm/drum_map_wasm.js';
 
@@ -17,6 +21,20 @@ export const mapNotes = map_notes;
 export const detectHints = detect_hints;
 export const sourceCoverage = source_coverage;
 export const convertMidi = convert_midi;
+
+// User map editor (crates/drum-map-wasm/src/user_maps.rs, SPEC §3.4).
+export const validateMap = validate_map;
+export const mapToToml = map_to_toml;
+export const parseMapToml = parse_map_toml;
+export const builtinMap = builtin_map;
+export type {
+  MapFallbackRule,
+  MapFull,
+  MapInput,
+  MapIssue,
+  MapNote,
+  MapParseResult,
+} from './wasm/drum_map_wasm.js';
 
 // Built-in catalog (crates/drum-map-wasm/src/catalog.rs).
 export type { MapInfo, NoteName } from './wasm/drum_map_wasm.js';

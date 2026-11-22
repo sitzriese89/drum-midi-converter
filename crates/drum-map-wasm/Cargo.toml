@@ -14,6 +14,7 @@ drum-map.workspace = true
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
+toml.workspace = true
 
 [dev-dependencies]
 midly.workspace = true

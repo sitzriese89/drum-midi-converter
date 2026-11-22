@@ -72,6 +72,41 @@ impl ArticulationTag {
     }
 }
 
+/// The tag vocabulary's instrument families (docs/tag-taxonomy.md, ADR-001):
+/// the drum-kit families the taxonomy documents, plus the GM/latin-percussion
+/// families the built-in maps already use. User-authored maps are validated
+/// against this list; new concepts extend the list here (and in the doc),
+/// they don't invent parallel names.
+pub const KNOWN_FAMILIES: &[&str] = &[
+    "kick",
+    "snare",
+    "tom",
+    "hihat",
+    "ride",
+    "crash",
+    "china",
+    "splash",
+    "stack",
+    "bell",
+    "clap",
+    "shaker",
+    "percussion",
+    "bongo",
+    "conga",
+    "timbale",
+    "agogo",
+    "whistle",
+    "guiro",
+    "woodblock",
+    "cuica",
+    "triangle",
+];
+
+/// True when `family` is part of the documented tag vocabulary.
+pub fn known_family(family: &str) -> bool {
+    KNOWN_FAMILIES.contains(&family)
+}
+
 impl fmt::Display for ArticulationTag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.0.join("."))
@@ -114,5 +149,13 @@ mod tests {
     fn family_is_first_segment() {
         let tag = ArticulationTag::parse("snare.rimshot").unwrap();
         assert_eq!(tag.family(), "snare");
+    }
+
+    #[test]
+    fn known_families_cover_the_taxonomy() {
+        assert!(known_family("hihat"));
+        assert!(known_family("percussion"));
+        assert!(!known_family("HiHat"));
+        assert!(!known_family("gong"));
     }
 }

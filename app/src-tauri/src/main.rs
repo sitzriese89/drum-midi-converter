@@ -7,6 +7,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod files;
+mod storage;
 
 fn main() {
     tauri::Builder::default()
@@ -15,6 +16,11 @@ fn main() {
             files::pick_midi_file,
             files::save_midi_file,
             files::write_temp_file,
+            storage::commands::read_map,
+            storage::commands::write_map,
+            storage::commands::list_user_maps,
+            storage::commands::delete_map,
+            storage::commands::export_map_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running the Drum MIDI Converter window");
