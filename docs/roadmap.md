@@ -1,6 +1,6 @@
 # Roadmap — drum-midi-converter
 
-Status: M2 done. Next: M3 (frontend + Tauri).
+Status: M3 part 1 (WASM + frontend + Tauri) done. Next: M3 map editor (Q6).
 
 ## M0 — Repository skeleton
 
@@ -30,11 +30,11 @@ Status: M2 done. Next: M3 (frontend + Tauri).
 
 ## M3 — Frontend + Tauri (mirrors chords-and-scales)
 
-- [ ] Svelte + TS + Vite app; `drum-map-wasm` bindings
-- [ ] Dropdowns with detection hint + mismatch warning
-- [ ] Table-first report UI with LOSSY badges and per-note overrides (Q10)
-- [ ] Save dialog + drag-out to DAW/explorer (Q13)
-- [ ] Tauri 2 shell: filesystem commands only (ADR-002)
+- [x] Svelte + TS + Vite app; `drum-map-wasm` bindings
+- [x] Dropdowns with detection hint + mismatch warning
+- [x] Table-first report UI with LOSSY badges and per-note overrides (Q10)
+- [x] Save dialog + drag-out to DAW/explorer (Q13)
+- [x] Tauri 2 shell: filesystem commands only (ADR-002)
 - [ ] Custom map editor + import/export (Q6)
 
 ## M4 — Web build
