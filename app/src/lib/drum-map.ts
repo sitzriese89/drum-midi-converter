@@ -6,18 +6,20 @@ import {
   convert_midi,
   detect_hints,
   list_maps,
+  map_notes,
   source_coverage,
   version as versionRaw,
 } from './wasm/drum_map_wasm.js';
 
 export const version = versionRaw;
 export const listMaps = list_maps;
+export const mapNotes = map_notes;
 export const detectHints = detect_hints;
 export const sourceCoverage = source_coverage;
 export const convertMidi = convert_midi;
 
 // Built-in catalog (crates/drum-map-wasm/src/catalog.rs).
-export type { MapInfo } from './wasm/drum_map_wasm.js';
+export type { MapInfo, NoteName } from './wasm/drum_map_wasm.js';
 
 // Detection hints (crates/drum-map-wasm/src/detect.rs, ADR-003). A hint, never a decision.
 export type { Candidate } from './wasm/drum_map_wasm.js';

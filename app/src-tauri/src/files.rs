@@ -16,6 +16,13 @@ pub struct PickedFile {
     pub bytes: Vec<u8>,
 }
 
+/// A MIDI-filtered file dialog builder: the filter both commands share.
+fn midi_dialog<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> tauri_plugin_dialog::FileDialogBuilder<R> {
+    app.dialog().file().add_filter("MIDI", &["mid", "midi"])
+}
+
 /// Opens a native open dialog for `.mid`/`.midi` files and reads the picked file.
 /// `None` when the dialog was cancelled.
 #[tauri::command]
@@ -23,12 +30,7 @@ pub async fn pick_midi_file<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
 ) -> Result<Option<PickedFile>, String> {
     // Async commands run off the main thread, where a blocking dialog is allowed.
-    let Some(picked) = app
-        .dialog()
-        .file()
-        .add_filter("MIDI", &["mid", "midi"])
-        .blocking_pick_file()
-    else {
+    let Some(picked) = midi_dialog(&app).blocking_pick_file() else {
         return Ok(None);
     };
     let path = picked
@@ -50,13 +52,7 @@ pub async fn save_midi_file<R: tauri::Runtime>(
     bytes: Vec<u8>,
 ) -> Result<Option<String>, String> {
     // Async commands run off the main thread, where a blocking dialog is allowed.
-    let Some(picked) = app
-        .dialog()
-        .file()
-        .add_filter("MIDI", &["mid", "midi"])
-        .set_file_name(&name)
-        .blocking_save_file()
-    else {
+    let Some(picked) = midi_dialog(&app).set_file_name(&name).blocking_save_file() else {
         return Ok(None);
     };
     let path = picked

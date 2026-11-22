@@ -1,7 +1,7 @@
 <script lang="ts">
   // The conversion report, table-first (SPEC §4.3, Q10): one row per used note — instrument
   // name, hit count, mapped target, LOSSY badge where a fallback fired, and an override
-  // dropdown for unmapped notes (ADR-004).
+  // dropdown for unmapped AND lossy notes (ADR-004, SPEC §4.3).
   import type { NoteRow } from '../drum-map';
   import type { OverrideChoice } from '../overrides';
 
@@ -33,15 +33,14 @@
 
   /** Target label for a report row: the mapped target, or the effective override. */
   function targetLabel(row: NoteRow): string {
-    if (row.unmapped) {
-      const choice = overrides.get(row.source_note);
-      if (choice?.kind === 'drop') return 'dropped';
-      if (choice?.kind === 'reassign') {
-        const target = targetNotes.find((t) => t.note === choice.note);
-        return `→ ${choice.note}${target ? ` ${target.name}` : ''}`;
-      }
-      return 'kept as-is';
+    const choice = overrides.get(row.source_note);
+    if (choice?.kind === 'drop') return 'dropped';
+    if (choice?.kind === 'reassign') {
+      const target = targetNotes.find((t) => t.note === choice.note);
+      return `→ ${choice.note}${target ? ` ${target.name}` : ''}`;
     }
+    // An explicit keep (or an unmapped row's default) keeps the source note as-is.
+    if (row.unmapped || choice?.kind === 'keep') return 'kept as-is';
     return row.target_note !== null && row.target_note !== undefined
       ? `${row.target_note} ${row.target_name ?? ''}`.trim()
       : '—';
@@ -76,7 +75,7 @@
           {/if}
         </td>
         <td>
-          {#if row.unmapped}
+          {#if row.unmapped || row.lossy}
             <select
               aria-label={`Override for note ${row.source_note}`}
               value={choiceKey(row.source_note)}

@@ -860,6 +860,7 @@ name = "drum-map-wasm"
 version = "0.1.0"
 dependencies = [
  "drum-map",
+ "midly",
  "serde",
  "serde-wasm-bindgen",
  "wasm-bindgen",

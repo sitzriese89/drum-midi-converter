@@ -7,13 +7,15 @@ import {
   convertMidi,
   detectHints,
   listMaps,
+  mapNotes,
   sourceCoverage,
   type Candidate,
   type MapInfo,
+  type NoteName,
   type Report,
 } from './drum-map';
 import { DEFAULT_CHOICE, type OverrideChoice, overridesPayload } from './overrides';
-import { type MidiFile, pickMidiFile, readMidiFile, saveMidiFile, writeTempFile } from './files';
+import { type MidiFile, isTauri, pickMidiFile, saveMidiFile, writeTempFile } from './files';
 
 /** Everything the conversion flow needs: file, picks, hint and the last conversion. */
 export class Converter {
@@ -28,7 +30,9 @@ export class Converter {
   hints = $state<Candidate[]>([]);
   /** Fraction of the used notes the chosen source map covers, null before a file is loaded. */
   coverage = $state<number | null>(null);
-  /** Per-note overrides for unmapped notes, keyed by source note number (ADR-004). */
+  /** The target map's full note vocabulary, for reassign overrides (SPEC §4.2). */
+  targetNotes = $state<NoteName[]>([]);
+  /** Per-note overrides for unmapped and lossy notes, keyed by source note (ADR-004, §4.3). */
   overrides = $state<SvelteMap<number, OverrideChoice>>(new SvelteMap());
   /** The last conversion's report, null before the first conversion. */
   report = $state<Report | null>(null);
@@ -56,9 +60,14 @@ export class Converter {
       const target = this.maps[1] ?? this.maps[0];
       this.toId = target?.id ?? '';
     }
+    await this.loadTargetNotes();
   }
 
-  /** Loads a MIDI file, computes hints and pre-selects the source map from the best hint. */
+  /**
+   * Loads a MIDI file and computes the detection hint (ADR-003: a hint,
+   * never a decision — the source dropdown is not touched; the user picks,
+   * optionally via the hint chip's Apply button).
+   */
   async loadFile(file: MidiFile) {
     this.error = null;
     this.file = file;
@@ -67,10 +76,6 @@ export class Converter {
     this.overrides = new SvelteMap();
     try {
       this.hints = await detectHints(file.bytes);
-      const best = this.hint;
-      if (best && this.maps.some((m) => m.id === best.map_id)) {
-        this.fromId = best.map_id;
-      }
       this.coverage = this.fromId ? ((await sourceCoverage(file.bytes, this.fromId)) ?? 1.0) : null;
     } catch (e) {
       this.hints = [];
@@ -79,13 +84,10 @@ export class Converter {
     }
   }
 
-  /** Opens the native open dialog (Tauri) or falls back to the callback (web). */
-  async pickFile(fallback?: () => Promise<MidiFile | null>) {
-    if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+  /** Opens the native open dialog under Tauri; the web file input handles the web build. */
+  async pickFile() {
+    if (isTauri()) {
       const picked = await pickMidiFile();
-      if (picked) await this.loadFile(picked);
-    } else if (fallback) {
-      const picked = await fallback();
       if (picked) await this.loadFile(picked);
     }
   }
@@ -95,6 +97,25 @@ export class Converter {
     this.fromId = id;
     if (this.file) {
       this.coverage = (await sourceCoverage(this.file.bytes, id)) ?? 1.0;
+    }
+  }
+
+  /** Sets the target map and refreshes the full reassign vocabulary (SPEC §4.2). */
+  async setToId(id: string) {
+    this.toId = id;
+    await this.loadTargetNotes();
+  }
+
+  /** Loads the full note vocabulary of the chosen target map. */
+  async loadTargetNotes() {
+    if (!this.toId) {
+      this.targetNotes = [];
+      return;
+    }
+    try {
+      this.targetNotes = await mapNotes(this.toId);
+    } catch {
+      this.targetNotes = [];
     }
   }
 
@@ -136,11 +157,6 @@ export class Converter {
     if (!this.converted) return null;
     return writeTempFile(name, this.converted);
   }
-}
-
-/** A dropped or picked `File` as a `MidiFile`. */
-export async function toMidiFile(file: File): Promise<MidiFile> {
-  return readMidiFile(file);
 }
 
 function message(error: unknown): string {

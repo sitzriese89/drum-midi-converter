@@ -1,7 +1,7 @@
 // End-to-end glue test: the real WASM core (loaded in test-setup.ts) converts a minimal
 // SMF and ranks the catalog (SPEC §4.1/§4.2).
 import { describe, expect, it } from 'vitest';
-import { convertMidi, detectHints, listMaps, sourceCoverage, version } from './drum-map';
+import { convertMidi, detectHints, listMaps, mapNotes, sourceCoverage, version } from './drum-map';
 
 /** Format-0 SMF: one kick hit (note 36) plus an unmapped cowbell (56) on channel 10. */
 function drumMidi(): Uint8Array {
@@ -89,5 +89,32 @@ describe('drum-map WASM', () => {
     const cowbell = result.report.rows.find((r: { source_note: number }) => r.source_note === 56);
     expect(cowbell.unmapped).toBe(true);
     expect(cowbell.target_note).toBeNull();
+  });
+
+  it('offers the FULL target-map note vocabulary (SPEC §4.2)', () => {
+    const notes = mapNotes('gm');
+    // Not just the notes a particular conversion used: the whole map.
+    expect(notes.length).toBe(47);
+    expect(notes.map((n: { note: number }) => n.note)).toEqual(
+      [...notes].map((n) => n.note).sort((a, b) => a - b),
+    );
+    expect(notes.find((n: { note: number }) => n.note === 36)?.name).toBe('Bass Drum 1');
+  });
+
+  it('lets mapped and lossy rows be overridden too (SPEC §4.3)', () => {
+    // 36 maps exactly; an explicit reassign must still win.
+    const result = convertMidi(drumMidi(), 'gm', 'ggd-invasion', {
+      36: { kind: 'reassign', note: 60 },
+    });
+    const kick = result.report.rows.find((r: { source_note: number }) => r.source_note === 36);
+    expect(kick.target_note).toBe(60);
+    expect(kick.unmapped).toBe(false);
+    expect(Array.from(result.midi)).toContain(60);
+  });
+
+  it('rejects a malformed per-note key', () => {
+    expect(() => convertMidi(drumMidi(), 'gm', 'ggd-invasion', { abc: { kind: 'drop' } })).toThrow(
+      /invalid note number/,
+    );
   });
 });

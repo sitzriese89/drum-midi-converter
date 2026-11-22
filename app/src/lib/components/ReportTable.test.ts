@@ -77,4 +77,42 @@ describe('ReportTable', () => {
     });
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
+
+  it('offers keep/drop/reassign overrides for LOSSY notes too (SPEC §4.3)', async () => {
+    const onOverride = vi.fn<(note: number, choice: OverrideChoice) => void>();
+    render(ReportTable, {
+      rows: [row({ lossy: true, target_note: 46, target_name: 'Open HH' })],
+      overrides: new Map(),
+      targetNotes: [
+        { note: 24, name: 'Kick' },
+        { note: 26, name: 'Snare' },
+      ],
+      onOverride,
+    });
+    // Lossy rows get the same override dropdown as unmapped ones.
+    const select = screen.getByRole('combobox', { name: /override for note 36/i });
+    expect(screen.getByTestId('lossy-badge')).toBeInTheDocument();
+    await fireEvent.change(select, { target: { value: 'reassign:26' } });
+    expect(onOverride).toHaveBeenCalledWith(36, { kind: 'reassign', note: 26 });
+    await fireEvent.change(select, { target: { value: 'drop' } });
+    expect(onOverride).toHaveBeenCalledWith(36, { kind: 'drop' });
+  });
+
+  it('shows the effective override on a lossy row', () => {
+    render(ReportTable, {
+      rows: [row({ lossy: true, target_note: 46, target_name: 'Open HH' })],
+      overrides: new Map<number, OverrideChoice>([[36, { kind: 'reassign', note: 26 }]]),
+      targetNotes: [{ note: 26, name: 'Snare' }],
+    });
+    expect(screen.getByText('→ 26 Snare')).toBeInTheDocument();
+  });
+
+  it('shows kept-as-is for a lossy row with an explicit keep override', () => {
+    render(ReportTable, {
+      rows: [row({ lossy: true, target_note: 46, target_name: 'Open HH' })],
+      overrides: new Map<number, OverrideChoice>([[36, { kind: 'keep' }]]),
+      targetNotes: [],
+    });
+    expect(screen.getByText('kept as-is')).toBeInTheDocument();
+  });
 });

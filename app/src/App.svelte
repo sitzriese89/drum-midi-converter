@@ -2,9 +2,9 @@
   // The conversion flow (SPEC §4): file in, source/target dropdowns with detection hint and
   // mismatch warning, convert, table-first report with overrides, save + drag-out (Q13).
   import { version } from './lib/drum-map';
-  import { Converter, toMidiFile } from './lib/converter.svelte';
+  import { Converter } from './lib/converter.svelte';
+  import { readMidiFile } from './lib/files';
   import ReportTable from './lib/components/ReportTable.svelte';
-  import { SvelteMap } from 'svelte/reactivity';
 
   const converter = new Converter();
   converter.loadCatalog();
@@ -13,37 +13,20 @@
   let draggingOver = $state(false);
   let dragUrl = $state('');
 
-  const targetNotes = $derived.by(() => {
-    const target = converter.maps.find((m) => m.id === converter.toId);
-    if (!target) return [];
-    // The override dropdowns offer the target vocabulary seen in the report: the target
-    // notes the conversion actually used, with their names. Reassign options come from
-    // there; enough for v1 (full target-map listing arrives with the custom maps, M5).
-    return noteVocabulary();
-  });
-
-  const hintMapId = $derived(converter.hint?.map_id ?? '');
+  const hintMapName = $derived(
+    converter.maps.find((m) => m.id === converter.hint?.map_id)?.name ??
+      converter.hint?.map_id ??
+      '',
+  );
   const coveragePercent = $derived(
     converter.coverage === null ? 100 : Math.round(converter.coverage * 100),
   );
-
-  function noteVocabulary(): { note: number; name: string }[] {
-    const entries = new SvelteMap<number, string>();
-    for (const row of converter.report?.rows ?? []) {
-      if (row.target_note !== null && row.target_note !== undefined) {
-        entries.set(row.target_note, row.target_name ?? '');
-      }
-    }
-    return [...entries.entries()]
-      .map(([note, name]) => ({ note, name }))
-      .sort((a, b) => a.note - b.note);
-  }
 
   async function onDrop(event: DragEvent) {
     event.preventDefault();
     draggingOver = false;
     const file = event.dataTransfer?.files[0];
-    if (file) await converter.loadFile(await toMidiFile(file));
+    if (file) await converter.loadFile(await readMidiFile(file));
   }
 
   function onDragOver(event: DragEvent) {
@@ -89,7 +72,7 @@
         aria-label="Choose MIDI file"
         onchange={async (e) => {
           const file = e.currentTarget.files?.[0];
-          if (file) await converter.loadFile(await toMidiFile(file));
+          if (file) await converter.loadFile(await readMidiFile(file));
         }}
       />
       or drag a .mid file here
@@ -101,8 +84,8 @@
 
   {#if converter.hint}
     <p class="hint-chip" data-testid="hint-chip">
-      Looks like {hintMapId}
-      <button onclick={() => converter.setFromId(hintMapId)}>Use as source</button>
+      Looks like {hintMapName}
+      <button onclick={() => converter.setFromId(converter.hint!.map_id)}>Use as source</button>
     </p>
   {/if}
 
@@ -117,7 +100,7 @@
     </label>
     <label>
       Target map
-      <select bind:value={converter.toId}>
+      <select value={converter.toId} onchange={(e) => converter.setToId(e.currentTarget.value)}>
         {#each converter.maps as map (map.id)}
           <option value={map.id}>{map.name}</option>
         {/each}
@@ -143,7 +126,7 @@
       <ReportTable
         rows={converter.report.rows}
         overrides={converter.overrides}
-        {targetNotes}
+        targetNotes={converter.targetNotes}
         onOverride={(note, choice) => {
           converter.setOverride(note, choice);
           converter.convert();

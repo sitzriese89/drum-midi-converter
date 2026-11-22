@@ -58,6 +58,14 @@ impl Default for ConvertOptions {
 }
 
 impl ConvertOptions {
+    /// Explicit per-note resolution, `Some` only when the user set an
+    /// override for exactly this note (unmapped AND lossy rows, SPEC §4.3).
+    /// Unlike [`Self::resolution_for`] this never falls back to the default,
+    /// so it can safely take precedence over the tag mapping.
+    pub fn explicit_resolution(&self, note: u8) -> Option<Resolution> {
+        self.per_note.get(&note).copied()
+    }
+
     /// Effective resolution for one source note.
     pub fn resolution_for(&self, note: u8) -> Resolution {
         self.per_note.get(&note).copied().unwrap_or(self.resolution)

@@ -68,13 +68,22 @@ impl NoteResolution {
     }
 
     /// Output note number for a source note, or `None` to drop it.
+    ///
+    /// An explicit per-note override wins over the tag mapping, so lossy
+    /// (and exact) rows can be overridden too (SPEC §4.3); notes without an
+    /// entry follow the mapping, and unmapped notes the resolution policy.
     fn output(&self, note: u8) -> Option<u8> {
-        match self.mapping.get(&note) {
-            Some(m) => Some(m.target),
-            None => match self.resolution_for(note) {
-                Resolution::Keep => Some(note),
-                Resolution::Drop => None,
-                Resolution::Reassign(n) => Some(n),
+        match self.options.explicit_resolution(note) {
+            Some(Resolution::Keep) => Some(note),
+            Some(Resolution::Drop) => None,
+            Some(Resolution::Reassign(n)) => Some(n),
+            None => match self.mapping.get(&note) {
+                Some(m) => Some(m.target),
+                None => match self.resolution_for(note) {
+                    Resolution::Keep => Some(note),
+                    Resolution::Drop => None,
+                    Resolution::Reassign(n) => Some(n),
+                },
             },
         }
     }
@@ -256,11 +265,29 @@ pub fn convert(
     };
     let (bytes, mut report) = rewrite_notes(smf_bytes, &resolution)?;
     for row in &mut report.rows {
+        // An explicit per-note override (SPEC §4.3: overrides exist for
+        // unmapped AND lossy rows) takes precedence over the tag mapping and
+        // is reported like an unmapped row's resolution: keep/drop claim no
+        // target (the UI's override state carries the decision), reassign
+        // names the chosen target note.
+        let explicit = resolution.options.explicit_resolution(row.source_note);
         if let Some(mapped) = resolution.mapping.get(&row.source_note) {
-            row.target_note = Some(mapped.target);
-            row.target_name = Some(mapped.target_name.clone());
             row.lossy = mapped.lossy;
             row.unmapped = false;
+            match explicit {
+                Some(Resolution::Reassign(n)) => {
+                    row.target_note = Some(n);
+                    row.target_name = to.note(n).map(|e| e.name.clone());
+                }
+                Some(Resolution::Keep) | Some(Resolution::Drop) => {
+                    row.target_note = None;
+                    row.target_name = None;
+                }
+                None => {
+                    row.target_note = Some(mapped.target);
+                    row.target_name = Some(mapped.target_name.clone());
+                }
+            }
         } else {
             // Unmapped rows never claim a target: `unmapped` already carries
             // the kept-as-is info, so consumers can distinguish "converted
@@ -581,6 +608,54 @@ mod tests {
     }
 
     #[test]
+    fn per_note_override_takes_precedence_over_a_lossy_mapping() {
+        let from = map("src", &[("Open HH 4", 46, "hihat.open.4")]);
+        let to = map(
+            "dst",
+            &[("Open HH", 46, "hihat.open"), ("Tom", 60, "tom.mid")],
+        );
+        // The tag resolves only through the parent-walk, so the row is LOSSY.
+        let mut opts = ConvertOptions::default();
+        opts.per_note.insert(46, Resolution::Reassign(60));
+        let (out, report) = convert(&kick_and_hat_smf(), &from, &to, None, &opts).unwrap();
+        let parsed = parse_out(&out);
+        let drums: Vec<_> = parsed.tracks[0]
+            .iter()
+            .filter_map(|e| match e.kind {
+                TrackEventKind::Midi { message, .. } => Some(message),
+                _ => None,
+            })
+            .collect();
+        // Order: kick (kept as-is, unmapped in src), then the overridden hat.
+        assert!(matches!(drums[2], MidiMessage::NoteOn { key, .. } if key.as_int() == 60));
+        let row = report.rows.iter().find(|r| r.source_note == 46).unwrap();
+        assert!(row.lossy);
+        assert!(!row.unmapped);
+        assert_eq!(row.target_note, Some(60));
+        assert_eq!(row.target_name.as_deref(), Some("Tom"));
+        // Dropping a lossy note removes it from the output.
+        let mut opts = ConvertOptions::default();
+        opts.per_note.insert(46, Resolution::Drop);
+        let (out, report) = convert(&kick_and_hat_smf(), &from, &to, None, &opts).unwrap();
+        let parsed = parse_out(&out);
+        let drums: Vec<_> = parsed.tracks[0]
+            .iter()
+            .filter_map(|e| match e.kind {
+                TrackEventKind::Midi { message, .. } => Some(message),
+                _ => None,
+            })
+            .collect();
+        // Only the unmapped kick's on/off (36, kept as-is) remain.
+        assert_eq!(drums.len(), 2);
+        assert!(drums.iter().all(
+            |m| matches!(m, MidiMessage::NoteOn { key, .. } | MidiMessage::NoteOff { key, .. } if key.as_int() == 36)
+        ));
+        let row = report.rows.iter().find(|r| r.source_note == 46).unwrap();
+        assert_eq!(row.target_note, None);
+        assert!(row.lossy);
+    }
+
+    #[test]
     fn invalid_smf_is_rejected() {
         let (from, to) = source_target_maps();
         assert!(convert(&[0u8; 4], &from, &to, None, &ConvertOptions::default()).is_err());
@@ -610,6 +685,48 @@ mod tests {
                         vel: u7::new(64),
                     },
                 },
+            },
+        ];
+        let mut bytes = Vec::new();
+        Smf {
+            header,
+            tracks: vec![track],
+        }
+        .write(&mut bytes)
+        .unwrap();
+        bytes
+    }
+
+    /// One-track SMF: a kick hit (36) and a hi-hat hit (46) on the drum
+    /// channel.
+    fn kick_and_hat_smf() -> Vec<u8> {
+        let header =
+            midly::Header::new(midly::Format::SingleTrack, Timing::Metrical(u15::new(480)));
+        let note = |key: u8, delta: u32, on: bool| TrackEvent {
+            delta: u28::new(delta),
+            kind: TrackEventKind::Midi {
+                channel: DRUM_CHANNEL,
+                message: if on {
+                    MidiMessage::NoteOn {
+                        key: u7::new(key),
+                        vel: u7::new(100),
+                    }
+                } else {
+                    MidiMessage::NoteOff {
+                        key: u7::new(key),
+                        vel: u7::new(64),
+                    }
+                },
+            },
+        };
+        let track: Track = vec![
+            note(36, 0, true),
+            note(36, 240, false),
+            note(46, 240, true),
+            note(46, 240, false),
+            TrackEvent {
+                delta: u28::new(0),
+                kind: TrackEventKind::Meta(midly::MetaMessage::EndOfTrack),
             },
         ];
         let mut bytes = Vec::new();
