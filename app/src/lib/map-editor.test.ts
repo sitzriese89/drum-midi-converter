@@ -50,8 +50,18 @@ describe('MapEditor', () => {
     const fields = editor.issues.map((i) => i.field);
     expect(fields).toContain('id');
     expect(fields).toContain('name');
-    expect(fields).toContain('notes.0.tag');
+    // Per-note fields are keyed by MIDI note number, not row index.
+    expect(fields).toContain('notes.36.tag');
     expect(editor.userMaps.maps).toEqual([]);
+  });
+
+  it('duplicating twice gets distinct ids instead of overwriting the first copy', async () => {
+    const editor = await editorWith();
+    editor.duplicateBuiltin('gm');
+    expect(editor.draft!.id).toBe('gm-copy');
+    editor.userMaps.maps = [{ id: 'gm-copy', name: 'General MIDI (copy)' }];
+    editor.duplicateBuiltin('gm');
+    expect(editor.draft!.id).toBe('gm-copy-2');
   });
 
   it('a tag outside the vocabulary is rejected with a pointer to the taxonomy', async () => {

@@ -6,9 +6,11 @@
 
   let { editor }: { editor: MapEditor } = $props();
 
-  /** The issues concerning one note row, by note number. */
-  function noteIssues(note: number): MapIssue[] {
-    return editor.issues.filter((issue) => issue.field === `notes.${note}`);
+  /** The issues concerning one note row, by note number: the core keys
+   * `notes.<n>…` fields by MIDI note number (not row index), so they follow
+   * the row when notes are added or removed. */
+  function noteIssues(note: number, suffix: string): MapIssue[] {
+    return editor.issues.filter((issue) => issue.field === `notes.${note}.${suffix}`);
   }
 
   /** The issues not attached to a note row (id, name, vendor, toml, …). */
@@ -156,13 +158,19 @@
                     disabled={!editor.userMaps.available}
                     aria-label="MIDI note number"
                   />
+                  {#each noteIssues(note.note, 'note') as issue, i (i)}
+                    <span class="issue" role="alert">{issue.message}</span>
+                  {/each}
                 </td>
                 <td>
                   <input bind:value={note.name} disabled={!editor.userMaps.available} />
+                  {#each noteIssues(note.note, 'name') as issue, i (i)}
+                    <span class="issue" role="alert">{issue.message}</span>
+                  {/each}
                 </td>
                 <td>
                   <input bind:value={note.tag} disabled={!editor.userMaps.available} />
-                  {#each noteIssues(note.note) as issue (issue.message)}
+                  {#each noteIssues(note.note, 'tag') as issue, i (i)}
                     <span class="issue" role="alert">{issue.message}</span>
                   {/each}
                 </td>

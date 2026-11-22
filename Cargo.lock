@@ -871,6 +871,7 @@ dependencies = [
 name = "drum-midi-converter"
 version = "0.1.0"
 dependencies = [
+ "drum-map",
  "serde",
  "tauri",
  "tauri-build",

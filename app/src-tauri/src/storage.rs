@@ -16,8 +16,10 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-/// Longest accepted map id, in characters (the core's `DrumMap::build` rule).
-pub const MAX_NAME_LEN: usize = 64;
+/// The map id rule lives in the core (`drum_map::valid_map_id`): one source
+/// for the rule the editor's validation (`DrumMap::build`) and the storage
+/// layer both enforce, since the id is also the file name (SPEC §3.4).
+pub const MAX_NAME_LEN: usize = drum_map::MAP_ID_MAX_LEN;
 
 /// Names Windows reserves for devices; `con.toml` can't be created there.
 const RESERVED_ON_WINDOWS: &[&str] = &[
@@ -63,20 +65,12 @@ fn io_error(context: impl Into<String>) -> impl FnOnce(io::Error) -> StorageErro
     }
 }
 
-/// Checks a map id: 1–64 characters from `a-z`, `0-9`, `-`, starting with a
-/// letter or digit, and not a Windows device name. Lowercase only, so ids
-/// can't collide on case-insensitive filesystems. The same rule is enforced
-/// by the core's `DrumMap::build` (the id is also the file name).
+/// Checks a map id against the core's shared rule (1–64 characters from
+/// `a-z`, `0-9`, `-`, starting with a letter or digit; see
+/// `drum_map::valid_map_id`), plus the OS-specific part storage owns: not a
+/// Windows device name, since `con.toml` can't be created there.
 pub fn validate_name(name: &str) -> Result<(), StorageError> {
-    let mut chars = name.chars();
-    let valid = !name.is_empty()
-        && name.len() <= MAX_NAME_LEN
-        && chars
-            .next()
-            .is_some_and(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
-        && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-        && !RESERVED_ON_WINDOWS.contains(&name);
-    if valid {
+    if drum_map::valid_map_id(name) && !RESERVED_ON_WINDOWS.contains(&name) {
         Ok(())
     } else {
         Err(StorageError::InvalidName(name.to_owned()))

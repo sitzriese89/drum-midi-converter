@@ -36,6 +36,26 @@ use serde::{Deserialize, Serialize};
 
 use crate::tags::{ArticulationTag, known_family};
 
+/// Longest accepted map id, in characters.
+pub const MAP_ID_MAX_LEN: usize = 64;
+
+/// True when `id` is a valid map id: 1–64 lowercase letters, digits or `-`,
+/// starting with a letter or digit. Lowercase only, so ids can't collide on
+/// case-insensitive filesystems. This is the single source of the rule: the
+/// id is also the file name in the app-data folder (SPEC §3.4), so
+/// `DrumMap::build` validates it here and the Tauri storage layer reuses it.
+pub fn valid_map_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= MAP_ID_MAX_LEN
+        && id
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
+        && id
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+}
+
 /// One drum map (one product).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DrumMap {
@@ -164,16 +184,7 @@ impl DrumMap {
             field: field.to_owned(),
             message,
         };
-        let valid_id = !id.is_empty()
-            && id.len() <= 64
-            && id
-                .chars()
-                .next()
-                .is_some_and(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
-            && id
-                .chars()
-                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
-        if !valid_id {
+        if !valid_map_id(id) {
             issues.push(issue(
                 "id",
                 "the id must be 1-64 lowercase letters, digits or '-', starting with a letter \
@@ -192,85 +203,67 @@ impl DrumMap {
         }
         let mut by_note: BTreeMap<u8, NoteEntry> = BTreeMap::new();
         let mut tags: Vec<(ArticulationTag, u8)> = Vec::new();
-        for (index, note) in notes.iter().enumerate() {
+        for note in notes {
+            // Issue fields are keyed by MIDI note NUMBER, not row index: the
+            // editor shows them on per-note rows, and indices shift whenever
+            // a note is added or removed.
+            if by_note.contains_key(&note.note) {
+                issues.push(issue(
+                    &format!("notes.{}.note", note.note),
+                    format!("duplicate MIDI note {}", note.note),
+                ));
+            }
             if note.name.trim().is_empty() {
                 issues.push(issue(
-                    &format!("notes.{index}.name"),
+                    &format!("notes.{}.name", note.note),
                     "the note name must not be empty".into(),
                 ));
             }
-            match ArticulationTag::parse(&note.tag) {
+            match parse_known_tag(&note.tag) {
                 Ok(tag) => {
-                    if !known_family(tag.family()) {
-                        issues.push(issue(
-                            &format!("notes.{index}.tag"),
-                            format!(
-                                "unknown tag family {:?}: use the ADR-001 vocabulary \
-                                 (docs/tag-taxonomy.md)",
-                                tag.family()
-                            ),
-                        ));
-                    }
                     if let Some((prev, _)) = tags.iter().find(|(t, _)| *t == tag) {
                         issues.push(issue(
-                            &format!("notes.{index}.tag"),
+                            &format!("notes.{}.tag", note.note),
                             format!("duplicate tag {} (already on note {prev})", note.tag),
                         ));
                     } else {
                         tags.push((tag.clone(), note.note));
                     }
-                    if by_note
-                        .insert(
-                            note.note,
-                            NoteEntry {
-                                name: note.name.clone(),
-                                tag,
-                            },
-                        )
-                        .is_some()
-                    {
-                        issues.push(issue(
-                            &format!("notes.{index}.note"),
-                            format!("duplicate MIDI note {}", note.note),
-                        ));
-                    }
+                    by_note.insert(
+                        note.note,
+                        NoteEntry {
+                            name: note.name.clone(),
+                            tag,
+                        },
+                    );
                 }
-                Err(e) => {
-                    issues.push(issue(&format!("notes.{index}.tag"), e.to_string()));
+                Err(message) => {
+                    issues.push(issue(&format!("notes.{}.tag", note.note), message));
                 }
             }
         }
+        let mut parsed_rules: Vec<FallbackRule> = Vec::new();
         for (index, rule) in fallback.iter().enumerate() {
-            for (end, text) in [("from", &rule.from), ("to", &rule.to)] {
-                match ArticulationTag::parse(text) {
-                    Ok(tag) => {
-                        if !known_family(tag.family()) {
-                            issues.push(issue(
-                                &format!("fallback.rules[{index}].{end}"),
-                                format!(
-                                    "unknown tag family {:?}: use the ADR-001 vocabulary \
-                                     (docs/tag-taxonomy.md)",
-                                    tag.family()
-                                ),
-                            ));
-                        }
-                    }
-                    Err(e) => {
-                        issues.push(issue(
-                            &format!("fallback.rules[{index}].{end}"),
-                            e.to_string(),
-                        ));
-                    }
+            let from = parse_known_tag(&rule.from);
+            let to = parse_known_tag(&rule.to);
+            for (end, result) in [("from", &from), ("to", &to)] {
+                if let Err(message) = result {
+                    issues.push(issue(
+                        &format!("fallback.rules[{index}].{end}"),
+                        message.clone(),
+                    ));
                 }
             }
-            if ArticulationTag::parse(&rule.from).is_ok()
-                && ArticulationTag::parse(&rule.to).is_ok()
-                && rule.from == rule.to
-            {
-                issues.push(issue(
+            match (&from, &to) {
+                (Ok(from), Ok(to)) if from == to => issues.push(issue(
                     &format!("fallback.rules[{index}]"),
                     "a fallback rule must collapse to a LESS specific tag".into(),
-                ));
+                )),
+                (Ok(from), Ok(to)) => parsed_rules.push(FallbackRule {
+                    from: from.clone(),
+                    to: to.clone(),
+                }),
+                _ => {}
             }
         }
         if !issues.is_empty() {
@@ -285,14 +278,8 @@ impl DrumMap {
                 .filter(|d| !d.is_empty())
                 .map(str::to_owned),
             notes: by_note,
-            fallback: (!fallback.is_empty()).then(|| FallbackSection {
-                rules: fallback
-                    .iter()
-                    .map(|r| FallbackRule {
-                        from: ArticulationTag::parse(&r.from).unwrap(),
-                        to: ArticulationTag::parse(&r.to).unwrap(),
-                    })
-                    .collect(),
+            fallback: (!fallback.is_empty()).then_some(FallbackSection {
+                rules: parsed_rules,
             }),
         })
     }
@@ -324,6 +311,19 @@ impl DrumMap {
             }
         }
         out
+    }
+}
+
+/// Parses a tag for validation: a parse error and a family outside the
+/// ADR-001 vocabulary both come back as the message for the field's issue.
+fn parse_known_tag(tag: &str) -> Result<ArticulationTag, String> {
+    match ArticulationTag::parse(tag) {
+        Ok(tag) if known_family(tag.family()) => Ok(tag),
+        Ok(tag) => Err(format!(
+            "unknown tag family {:?}: use the ADR-001 vocabulary (docs/tag-taxonomy.md)",
+            tag.family()
+        )),
+        Err(e) => Err(e.to_string()),
     }
 }
 
@@ -569,17 +569,32 @@ mod tests {
         assert!(fields.contains(&"id"), "{issues:?}");
         assert!(fields.contains(&"name"), "{issues:?}");
         assert!(fields.contains(&"vendor"), "{issues:?}");
-        assert!(fields.contains(&"notes.0.name"), "{issues:?}");
-        assert!(fields.contains(&"notes.0.tag"), "{issues:?}");
+        // Per-note issues are keyed by MIDI note NUMBER, not row index: the
+        // editor shows them on the matching note row.
+        assert!(fields.contains(&"notes.38.name"), "{issues:?}");
+        assert!(fields.contains(&"notes.38.tag"), "{issues:?}");
         // The gong family is outside the taxonomy, and note 36 is duplicated.
-        assert!(fields.contains(&"notes.2.tag"), "{issues:?}");
-        assert!(fields.contains(&"notes.2.note"), "{issues:?}");
+        assert!(fields.contains(&"notes.36.tag"), "{issues:?}");
+        assert!(fields.contains(&"notes.36.note"), "{issues:?}");
         // The taxonomy check names the vocabulary doc.
         assert!(
             issues
                 .iter()
                 .any(|i| i.message.contains("docs/tag-taxonomy.md"))
         );
+    }
+
+    /// The map-id rule is one shared function (the Tauri storage layer
+    /// reuses it, the id is also the file name).
+    #[test]
+    fn valid_map_id_follows_the_shared_rule() {
+        for id in ["gm", "my-kit", "kit2", &"a".repeat(MAP_ID_MAX_LEN)] {
+            assert!(valid_map_id(id), "{id:?} should be valid");
+        }
+        for id in ["", "Upper", "with space", "with.dot", "a/b", "-lead"] {
+            assert!(!valid_map_id(id), "{id:?} should be invalid");
+        }
+        assert!(!valid_map_id(&"a".repeat(MAP_ID_MAX_LEN + 1)));
     }
 
     /// A `from == to` fallback rule is a no-op and is rejected.

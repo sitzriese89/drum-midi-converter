@@ -38,10 +38,17 @@ describe('UserMaps', () => {
     expect(userMaps.error).toBeNull();
   });
 
-  it('reads the display name from the TOML and falls back to the id', () => {
+  it('reads the display name through the core parser and falls back to the id', () => {
     expect(mapName(MY_KIT, 'my-kit')).toBe('My Kit');
+    // A file that doesn't parse (truncated, hand-edited) falls back to the id.
     expect(mapName('id = "x"\n', 'x')).toBe('x');
-    expect(mapName('name = "a\\"b"\n', 'x')).toBe('a"b');
+    // Escaped quotes come back unescaped, via the core's TOML parser.
+    expect(
+      mapName(
+        'id = "x"\nname = "a\\"b"\nvendor = "V"\n\n[notes.36]\nname = "Kick"\ntag = "kick.1"\n',
+        'x',
+      ),
+    ).toBe('a"b');
   });
 
   it('reports write failures instead of throwing', async () => {

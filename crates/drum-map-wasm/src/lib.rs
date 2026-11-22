@@ -140,7 +140,7 @@ export interface MapFull {
 
 /** One validation problem, naming the field it concerns. */
 export interface MapIssue {
-  /** The field: `id`, `notes.0.tag`, `fallback.rules[1].from`, `toml` for a parse error. */
+  /** The field: `id`, `notes.36.tag`, `fallback.rules[1].from`, `toml` for a parse error. */
   field: string;
   /** The full problem message. */
   message: string;

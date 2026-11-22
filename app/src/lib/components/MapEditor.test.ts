@@ -67,6 +67,19 @@ describe('MapEditor (component)', () => {
     expect(screen.getByTestId('user-map-list')).toHaveTextContent('No user maps yet');
   });
 
+  it('shows a per-note issue next to its row (fields are keyed by note number)', async () => {
+    const editor = await renderEditor();
+    fireEvent.click(screen.getByTestId('new-map'));
+    await waitFor(() => expect(screen.getByTestId('draft-id')).toBeInTheDocument());
+    // A bad tag on note 36: the core reports `notes.36.tag`, and the row shows it.
+    editor.draft!.notes[0].tag = 'Kick!';
+    fireEvent.click(screen.getByTestId('save-map'));
+    await waitFor(() => expect(screen.getByTestId('validation-issues')).toBeInTheDocument());
+    const row = screen.getByLabelText('MIDI note number').closest('tr');
+    expect(row).not.toBeNull();
+    expect(row!).toHaveTextContent(/lowercase/);
+  });
+
   it('a saved user map appears in the list', async () => {
     const editor = await renderEditor();
     fireEvent.click(screen.getByTestId('new-map'));

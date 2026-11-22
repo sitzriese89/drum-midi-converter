@@ -47,14 +47,9 @@ pub struct MapFull {
     pub fallback: Option<Vec<MapFallbackRule>>,
 }
 
-/// One validation problem, naming the field it concerns.
-#[derive(Serialize, Debug, Clone)]
-pub struct MapIssue {
-    /// The field the problem concerns: `id`, `notes.0.tag`, `fallback.rules[1].from`, …
-    pub field: String,
-    /// The full problem message.
-    pub message: String,
-}
+/// One validation problem, naming the field it concerns. The core's type,
+/// re-exported so the boundary has one `MapIssue`, not a parallel copy.
+pub use drum_map::MapIssue;
 
 /// What parsing or validating a map produced: a `MapFull` only when there are
 /// no issues; the issues are shown in the editor, never silently ignored.
@@ -220,16 +215,7 @@ fn validate_map_inner(input: MapInput) -> Result<MapParseResult, String> {
             map: Some(full_of(map)),
             issues: Vec::new(),
         }),
-        Err(issues) => Ok(MapParseResult {
-            map: None,
-            issues: issues
-                .into_iter()
-                .map(|i| MapIssue {
-                    field: i.field,
-                    message: i.message,
-                })
-                .collect(),
-        }),
+        Err(issues) => Ok(MapParseResult { map: None, issues }),
     }
 }
 
@@ -327,7 +313,8 @@ mod tests {
             .map(|i| (i.field.as_str(), i.message.as_str()))
             .unzip();
         assert!(fields.contains(&"id"), "{messages:?}");
-        assert!(fields.contains(&"notes.0.tag"), "{messages:?}");
+        // Note fields are keyed by MIDI note number, not row index.
+        assert!(fields.contains(&"notes.36.tag"), "{messages:?}");
     }
 
     #[test]

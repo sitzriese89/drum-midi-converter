@@ -158,4 +158,62 @@ mod tests {
         assert!(!known_family("HiHat"));
         assert!(!known_family("gong"));
     }
+
+    /// The taxonomy doc and `KNOWN_FAMILIES` cannot drift: every family named
+    /// in docs/tag-taxonomy.md (via its backticked tag examples) plus the
+    /// GM-only families the doc defers to `gm.toml` must be exactly the known
+    /// list. The doc itself is never edited to make this pass.
+    #[test]
+    fn the_taxonomy_doc_and_known_families_agree() {
+        let doc = include_str!("../../../docs/tag-taxonomy.md");
+        let (gm_file, gm_toml) = crate::catalog::EMBEDDED_MAPS
+            .iter()
+            .find(|(file, _)| *file == "gm.toml")
+            .expect("gm.toml is embedded");
+        assert_eq!(*gm_file, "gm.toml");
+
+        // Families from the doc: first segments of backticked, well-formed
+        // multi-segment tag examples (`hihat.open.3.tip`, `china.N.mute`, …).
+        // Uppercase `N` placeholders are fine except in the first segment;
+        // file names and broken spans are not tags and are skipped.
+        let mut families: Vec<String> = doc
+            .lines()
+            .flat_map(|line| line.split('`').skip(1).step_by(2))
+            .filter(|span| {
+                let segments: Vec<&str> = span.split('.').collect();
+                segments.len() >= 2
+                    && !span.ends_with(".toml")
+                    && !span.ends_with(".md")
+                    && segments[0]
+                        .chars()
+                        .next()
+                        .is_some_and(|c| c.is_ascii_lowercase())
+                    && segments.iter().all(|s| {
+                        !s.is_empty() && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+                    })
+            })
+            .map(|span| span.split('.').next().unwrap().to_owned())
+            .collect();
+
+        // The GM-only families: first segments of gm.toml's tag values, which
+        // the doc defers to ("plus the GM-only names already in gm.toml").
+        for line in gm_toml.lines() {
+            if let Some(tag) = line
+                .trim()
+                .strip_prefix("tag = \"")
+                .and_then(|t| t.strip_suffix('"'))
+            {
+                families.push(tag.split('.').next().unwrap().to_owned());
+            }
+        }
+
+        families.sort();
+        families.dedup();
+        let mut known: Vec<String> = KNOWN_FAMILIES.iter().map(|s| s.to_string()).collect();
+        known.sort();
+        assert_eq!(
+            families, known,
+            "docs/tag-taxonomy.md and KNOWN_FAMILIES drifted"
+        );
+    }
 }

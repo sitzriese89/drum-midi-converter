@@ -8,6 +8,7 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import { isTauri } from './files';
+import { parseMapToml } from './drum-map';
 
 /** Where user maps are kept: the Tauri app-data commands, or a test double. */
 export interface MapStorage {
@@ -57,10 +58,12 @@ export function mapStorage(): MapStorage {
   return isTauri() ? tauriMapStorage : unavailableMapStorage;
 }
 
-/** The display name of a stored map, read straight from its TOML (id as fallback). */
+/** The display name of a stored map, read through the core's TOML parser
+ * (SPEC §2.2: the core is the one schema reader — no hand-rolled regex here).
+ * Falls back to the id only when the file doesn't parse (e.g. truncated or
+ * hand-edited), so the list still shows every stored id. */
 export function mapName(toml: string, id: string): string {
-  const match = /^name\s*=\s*"((?:[^"\\]|\\.)*)"/m.exec(toml);
-  return match ? JSON.parse(`"${match[1]}"`) : id;
+  return parseMapToml(toml).map?.name ?? id;
 }
 
 export class UserMaps {

@@ -25,7 +25,7 @@ pub(crate) mod test_fixtures;
 
 pub use catalog::{CatalogError, catalog, find_map};
 pub use convert::{ConvertOptions, Resolution};
-pub use map::{DrumMap, FallbackRuleInput, MapIssue, NoteInput};
+pub use map::{DrumMap, FallbackRuleInput, MAP_ID_MAX_LEN, MapIssue, NoteInput, valid_map_id};
 pub use midi::{convert, convert_by_id};
 pub use overrides::OverrideTable;
 pub use report::Report;

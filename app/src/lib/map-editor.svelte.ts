@@ -52,11 +52,18 @@ export class MapEditor {
     this.clearMessages();
   }
 
-  /** Loads a read-only built-in as an editable copy (id/name suffixed). */
+  /** Loads a read-only built-in as an editable copy. The id is suffixed
+   * `-copy`, `-copy-2`, … so a second duplicate never overwrites the first;
+   * uniqueness is checked against the stored user-map ids (the id is also
+   * the file name, SPEC §3.4). */
   duplicateBuiltin(id: string) {
     const full: MapFull = builtinMap(id);
+    // A plain array read-only check (the ids come from $state, never mutated).
+    const taken = this.userMaps.maps.map((map) => map.id);
+    let uniqueId = `${full.id}-copy`;
+    for (let n = 2; taken.includes(uniqueId); n += 1) uniqueId = `${full.id}-copy-${n}`;
     this.draft = {
-      id: `${full.id}-copy`,
+      id: uniqueId,
       name: `${full.name} (copy)`,
       vendor: full.vendor,
       description: full.description,
