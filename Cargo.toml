@@ -4,6 +4,7 @@ members = [
     "crates/drum-map",
     "crates/drum-map-wasm",
     "crates/drum-map-cli",
+    "app/src-tauri",
 ]
 
 [workspace.package]
