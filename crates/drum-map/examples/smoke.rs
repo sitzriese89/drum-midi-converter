@@ -49,7 +49,7 @@ fn main() {
             kind: TrackEventKind::Meta(MetaMessage::EndOfTrack),
         },
     ];
-    let mut smf = Smf {
+    let smf = Smf {
         header: Header::new(Format::Parallel, Timing::Metrical(u15::new(480))),
         tracks: vec![
             vec![TrackEvent {

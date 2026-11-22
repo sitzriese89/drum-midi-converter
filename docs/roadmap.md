@@ -1,6 +1,6 @@
 # Roadmap — drum-midi-converter
 
-Status: M3 part 1 (WASM + frontend + Tauri) done. Next: M3 map editor (Q6).
+Status: M3 complete. Next: M4 (web build).
 
 ## M0 — Repository skeleton
 
@@ -35,7 +35,7 @@ Status: M3 part 1 (WASM + frontend + Tauri) done. Next: M3 map editor (Q6).
 - [x] Table-first report UI with LOSSY badges and per-note overrides (Q10)
 - [x] Save dialog + drag-out to DAW/explorer (Q13)
 - [x] Tauri 2 shell: filesystem commands only (ADR-002)
-- [ ] Custom map editor + import/export (Q6)
+- [x] Custom map editor + import/export (Q6)
 
 ## M4 — Web build
 
