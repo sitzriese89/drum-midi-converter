@@ -1,9 +1,16 @@
 // The user maps store (SPEC §3.4): list/read/write/delete over an injected storage, the
-// web fallback that refuses everything, and the user maps landing in the converter's
+// web build's browser storage (M4), the fallback that refuses everything when storage is blocked, and the user maps landing in the converter's
 // dropdowns (App merges them into `loadCatalog`).
 import { describe, expect, it } from 'vitest';
 import { Converter } from './converter.svelte';
-import { unavailableMapStorage, UserMaps, type MapStorage, mapName } from './user-maps.svelte';
+import {
+  BROWSER_KEY_PREFIX,
+  browserMapStorage,
+  unavailableMapStorage,
+  UserMaps,
+  type MapStorage,
+  mapName,
+} from './user-maps.svelte';
 
 const MY_KIT = `id = "my-kit"\nname = "My Kit"\nvendor = "Me"\n\n[notes.36]\nname = "Kick"\ntag = "kick.1"\n`;
 
@@ -62,13 +69,47 @@ describe('UserMaps', () => {
     expect(userMaps.maps).toEqual([]);
   });
 
-  it('the web fallback is unavailable and refuses every operation', async () => {
+  it('the web build keeps maps in browser storage, under its own key prefix', async () => {
+    localStorage.clear();
+    localStorage.setItem('unrelated', 'left alone');
+    const userMaps = new UserMaps(browserMapStorage(localStorage));
+    expect(userMaps.available).toBe(true);
+    expect(userMaps.notice).toMatch(/this browser only/);
+    await userMaps.save('my-kit', MY_KIT);
+    expect(localStorage.getItem(BROWSER_KEY_PREFIX + 'my-kit')).toBe(MY_KIT);
+    // A fresh store over the same storage (a page reload) sees the saved map.
+    const reloaded = new UserMaps(browserMapStorage(localStorage));
+    await reloaded.load();
+    expect(reloaded.maps).toEqual([{ id: 'my-kit', name: 'My Kit' }]);
+    await reloaded.delete('my-kit');
+    expect(reloaded.maps).toEqual([]);
+    expect(localStorage.getItem('unrelated')).toBe('left alone');
+    localStorage.clear();
+  });
+
+  it('a full browser storage reports the failure with the map id', async () => {
+    const full = {
+      length: 0,
+      key: () => null,
+      getItem: () => null,
+      setItem: () => {
+        throw new DOMException('quota', 'QuotaExceededError');
+      },
+      removeItem: () => {},
+      clear: () => {},
+    } satisfies Storage;
+    const userMaps = new UserMaps(browserMapStorage(full));
+    await userMaps.save('my-kit', MY_KIT);
+    expect(userMaps.error).toMatch(/could not save map "my-kit" in browser storage/);
+  });
+
+  it('the blocked-storage fallback is unavailable and refuses every operation', async () => {
     const userMaps = new UserMaps(unavailableMapStorage);
     expect(userMaps.available).toBe(false);
-    await expect(userMaps.read('my-kit')).rejects.toThrow(/desktop app/);
+    await expect(userMaps.read('my-kit')).rejects.toThrow(/browser storage/);
     // save reports the failure instead of rejecting: the UI shows the error line.
     await userMaps.save('my-kit', MY_KIT);
-    expect(userMaps.error).toContain('desktop app');
+    expect(userMaps.error).toContain('browser storage');
     await userMaps.load();
     expect(userMaps.maps).toEqual([]);
   });

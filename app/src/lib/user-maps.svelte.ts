@@ -1,19 +1,22 @@
-// The user's own drum maps (SPEC §3.4, Q6): `<id>.toml` files in the OS app-data folder,
-// in the same schema as the built-in maps, written and read through the Rust commands
-// (ADR-002). Under Tauri they live on disk; on the web they are unavailable — the editor
-// surfaces that instead of pretending to save (M4 may add IndexedDB/localStorage).
+// The user's own drum maps (SPEC §3.4, Q6), in the same TOML schema as the built-in maps.
+// Under Tauri they are `<id>.toml` files in the OS app-data folder, written and read through
+// the Rust commands (ADR-002). In the web build (M4) they live in the browser's
+// localStorage, one entry per map; when the browser blocks storage they are unavailable
+// and the editor says so instead of pretending to save.
 //
 // Like the conversion flow, the list lives in this class: every change bumps `revision`,
 // and `App` re-merges the user maps into the source/target dropdowns when it changes.
 
 import { invoke } from '@tauri-apps/api/core';
-import { isTauri } from './files';
+import { downloadFile, isTauri } from './files';
 import { parseMapToml } from './drum-map';
 
-/** Where user maps are kept: the Tauri app-data commands, or a test double. */
+/** Where user maps are kept: the Tauri app-data commands, browser storage, or a test double. */
 export interface MapStorage {
-  /** False when user maps can't be persisted here (the plain web build). */
+  /** False when user maps can't be persisted here (browser storage blocked). */
   readonly available: boolean;
+  /** A caveat about where maps are kept, shown in the editor (e.g. "this browser only"). */
+  readonly notice?: string;
   list(): Promise<string[]>;
   read(id: string): Promise<string | null>;
   write(id: string, content: string): Promise<void>;
@@ -32,7 +35,60 @@ export const tauriMapStorage: MapStorage = {
   exportFile: (id, content) => invoke<string | null>('export_map_file', { id, content }),
 };
 
-/** The web fallback: user maps are unavailable, and everything says so. */
+/** Prefix of the localStorage keys that hold user maps: `<prefix><id>` → TOML text. */
+export const BROWSER_KEY_PREFIX = 'drum-midi-converter.map.';
+
+/** The web implementation over a `Storage` (localStorage in the app, a fake in tests).
+ * Ids aren't paths here, but `DrumMap::build` has already checked them before any save. */
+export function browserMapStorage(storage: Storage): MapStorage {
+  return {
+    available: true,
+    notice:
+      'Maps are saved in this browser only. Clearing site data deletes them; export a map to keep a copy.',
+    list: async () => {
+      const ids: string[] = [];
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key?.startsWith(BROWSER_KEY_PREFIX)) ids.push(key.slice(BROWSER_KEY_PREFIX.length));
+      }
+      return ids.sort();
+    },
+    read: async (id) => storage.getItem(BROWSER_KEY_PREFIX + id),
+    write: async (id, content) => {
+      try {
+        storage.setItem(BROWSER_KEY_PREFIX + id, content);
+      } catch (error) {
+        // QuotaExceededError and friends: say what failed, not just the DOM error name.
+        throw new Error(`could not save map "${id}" in browser storage: ${message(error)}`, {
+          cause: error,
+        });
+      }
+    },
+    delete: async (id) => storage.removeItem(BROWSER_KEY_PREFIX + id),
+    exportFile: async (id, content) => {
+      const name = `${id}.toml`;
+      downloadFile(name, content, 'application/toml');
+      return name;
+    },
+  };
+}
+
+/** The app's localStorage, or null when the browser blocks it (privacy settings, sandboxed
+ * frames): reading the property itself can throw. */
+function localStorageOrNull(): Storage | null {
+  try {
+    const storage = globalThis.localStorage;
+    if (!storage) return null;
+    const probe = `${BROWSER_KEY_PREFIX}__probe__`;
+    storage.setItem(probe, '');
+    storage.removeItem(probe);
+    return storage;
+  } catch {
+    return null;
+  }
+}
+
+/** The fallback when nothing can persist user maps: unavailable, and everything says so. */
 export const unavailableMapStorage: MapStorage = {
   available: false,
   list: async () => [],
@@ -51,11 +107,14 @@ export const unavailableMapStorage: MapStorage = {
 };
 
 const unavailableMessage =
-  'user maps need the desktop app (they are stored in the app-data folder)';
+  'user maps need browser storage, which is blocked here (or use the desktop app)';
 
-/** The storage for this runtime: Tauri commands, or the unavailable fallback on the web. */
+/** The storage for this runtime: Tauri commands, browser storage on the web, or the
+ * unavailable fallback when the browser blocks storage. */
 export function mapStorage(): MapStorage {
-  return isTauri() ? tauriMapStorage : unavailableMapStorage;
+  if (isTauri()) return tauriMapStorage;
+  const storage = localStorageOrNull();
+  return storage ? browserMapStorage(storage) : unavailableMapStorage;
 }
 
 /** The display name of a stored map, read through the core's TOML parser
@@ -79,6 +138,11 @@ export class UserMaps {
   /** True when user maps can be persisted in this runtime. */
   get available(): boolean {
     return this.storage.available;
+  }
+
+  /** The storage's caveat about where maps are kept, if any. */
+  get notice(): string | null {
+    return this.storage.notice ?? null;
   }
 
   /** Reads the stored map ids and their display names. Never rejects. */
@@ -123,7 +187,7 @@ export class UserMaps {
     }
   }
 
-  /** Exports a map TOML through a save dialog (desktop) or a download (not on the web). */
+  /** Exports a map TOML through a save dialog (desktop) or a browser download (web). */
   async exportFile(id: string, toml: string): Promise<string | null> {
     this.error = null;
     try {

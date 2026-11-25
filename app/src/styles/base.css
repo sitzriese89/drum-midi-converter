@@ -22,8 +22,18 @@ main {
   background: #eef4ff;
 }
 
-input[type='file'] {
+input[type='file']:not(.visually-hidden) {
   margin-left: 1rem;
+}
+
+/* Kept in the DOM (and the accessibility tree) for the picker button to click. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .hint-chip {

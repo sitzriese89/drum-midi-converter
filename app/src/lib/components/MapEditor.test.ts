@@ -94,9 +94,16 @@ describe('MapEditor (component)', () => {
     expect(screen.getByTestId('user-map-list')).toHaveTextContent('my-kit');
   });
 
-  it('is disabled with a note when user maps are unavailable (web build)', async () => {
+  it('shows where maps are kept when the storage has a caveat (web build)', async () => {
+    await renderEditor({ ...memoryStorage(), notice: 'Maps are saved in this browser only.' });
+    expect(screen.getByTestId('storage-notice')).toHaveTextContent(/this browser only/);
+    expect(screen.queryByTestId('unavailable-note')).toBeNull();
+    expect(screen.getByTestId('new-map')).toBeEnabled();
+  });
+
+  it('is disabled with a note when user maps are unavailable (browser storage blocked)', async () => {
     await renderEditor(unavailableStorage());
-    expect(screen.getByTestId('unavailable-note')).toHaveTextContent(/desktop app/);
+    expect(screen.getByTestId('unavailable-note')).toHaveTextContent(/blocks site storage/);
     expect(screen.getByTestId('new-map')).toBeDisabled();
     expect(screen.getByTestId('export')).toBeDisabled();
     // The built-in Duplicate buttons are disabled too: there is nowhere to save the copy.

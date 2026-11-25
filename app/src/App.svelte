@@ -4,7 +4,7 @@
   // The map editor (SPEC §3.4, Q6) lives behind the "Map editor" tab.
   import { listMaps, version } from './lib/drum-map';
   import { Converter } from './lib/converter.svelte';
-  import { readMidiFile } from './lib/files';
+  import { isTauri, readMidiFile } from './lib/files';
   import { UserMaps } from './lib/user-maps.svelte';
   import { MapEditor } from './lib/map-editor.svelte';
   import ReportTable from './lib/components/ReportTable.svelte';
@@ -26,6 +26,11 @@
     // Re-run whenever the user maps change (save, delete, load).
     if (userMaps.revision >= 0) void converter.loadCatalog(userMaps.maps);
   });
+
+  // Desktop: native dialogs and drag-out (Tauri commands). Web (M4): a file input in,
+  // a browser download out — a browser can't hand a DAW a real file, so no drag-out.
+  const desktop = isTauri();
+  let fileInput = $state<HTMLInputElement>();
 
   let outputName = $state('converted.mid');
   let draggingOver = $state(false);
@@ -97,14 +102,24 @@
       ondrop={onDrop}
     >
       <p>
-        <button onclick={() => converter.pickFile()}>Choose MIDI file…</button>
+        <button
+          data-testid="pick-file"
+          onclick={() => (desktop ? converter.pickFile() : fileInput?.click())}
+        >
+          Choose MIDI file…
+        </button>
         <input
+          bind:this={fileInput}
+          class="visually-hidden"
           type="file"
           accept=".mid,.midi,audio/midi"
           aria-label="Choose MIDI file"
           onchange={async (e) => {
-            const file = e.currentTarget.files?.[0];
+            const input = e.currentTarget;
+            const file = input.files?.[0];
             if (file) await converter.loadFile(await readMidiFile(file));
+            // Let the same file be picked again after a change.
+            input.value = '';
           }}
         />
         or drag a .mid file here
@@ -168,8 +183,10 @@
           }}
         />
         <div class="output">
-          <button onclick={onSave}>Save converted file…</button>
-          {#if converter.converted}
+          <button onclick={onSave} data-testid="save">
+            {desktop ? 'Save converted file…' : 'Download converted file'}
+          </button>
+          {#if desktop && converter.converted}
             <a href={dragUrl} draggable="true" data-testid="drag-out" ondragstart={onDragOut}>
               Drag me into your DAW
             </a>

@@ -1,5 +1,5 @@
-// Filesystem layer (ADR-002): under Tauri, files come from Rust commands only; on the web it
-// degrades to a file input and a browser download (M4 builds on this).
+// Filesystem layer (ADR-002): under Tauri, files come from Rust commands only; in the web
+// build (M4) they come from a browser file input or drop, and leave as a browser download.
 
 import { invoke } from '@tauri-apps/api/core';
 
@@ -14,7 +14,8 @@ export function isTauri(): boolean {
   return '__TAURI_INTERNALS__' in globalThis;
 }
 
-/** Opens a native open dialog (Rust-side) and reads the picked file. Null when cancelled. */
+/** Opens a native open dialog (Rust-side) and reads the picked file. Null when cancelled.
+ * Tauri only: the web build picks through a file input instead. */
 export async function pickMidiFile(): Promise<MidiFile | null> {
   const picked = await invoke<{ name: string; bytes: number[] } | null>('pick_midi_file');
   return picked ? { name: picked.name, bytes: new Uint8Array(picked.bytes) } : null;
@@ -30,21 +31,30 @@ export async function saveMidiFile(name: string, bytes: Uint8Array): Promise<str
   if (isTauri()) {
     return invoke<string | null>('save_midi_file', { name, bytes: Array.from(bytes) });
   }
-  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'audio/midi' }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = name;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  downloadFile(name, bytes, 'audio/midi');
   return name;
 }
 
-/** Writes a temp file for drag-out and returns its `file://` URL. Web: an object URL. */
+/** Starts a browser download of `content` as `name` (the web build's "save"). */
+export function downloadFile(name: string, content: Uint8Array | string, type: string): void {
+  const blob = new Blob([content as BlobPart], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = name;
+  anchor.style.display = 'none';
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  // Revoking right after click() can cancel the download in some browsers (Firefox):
+  // give it a moment to start.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/** Writes a temp file for drag-out and returns its `file://` URL. Tauri only: a browser
+ * can't hand a DAW a real file, so the web build offers the download instead. */
 export async function writeTempFile(name: string, bytes: Uint8Array): Promise<string> {
-  if (isTauri()) {
-    const path = await invoke<string>('write_temp_file', { name, bytes: Array.from(bytes) });
-    // URL-encode the path: a DAW/explorer drop target reads it back as UTF-8.
-    return `file://${encodeURI(path)}`;
-  }
-  return URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'audio/midi' }));
+  const path = await invoke<string>('write_temp_file', { name, bytes: Array.from(bytes) });
+  // URL-encode the path: a DAW/explorer drop target reads it back as UTF-8.
+  return `file://${encodeURI(path)}`;
 }

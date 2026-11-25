@@ -84,12 +84,10 @@ export class Converter {
     }
   }
 
-  /** Opens the native open dialog under Tauri; the web file input handles the web build. */
+  /** Opens the native open dialog (Tauri only; the web build picks through a file input). */
   async pickFile() {
-    if (isTauri()) {
-      const picked = await pickMidiFile();
-      if (picked) await this.loadFile(picked);
-    }
+    const picked = await pickMidiFile();
+    if (picked) await this.loadFile(picked);
   }
 
   /** Re-checks the coverage after the user changes the source map. */
@@ -152,9 +150,9 @@ export class Converter {
     return saveMidiFile(name, this.converted);
   }
 
-  /** Writes the converted file to a temp path for drag-out (Q13). */
+  /** Writes the converted file to a temp path for drag-out (Q13). Tauri only. */
   async dragOut(name: string) {
-    if (!this.converted) return null;
+    if (!this.converted || !isTauri()) return null;
     return writeTempFile(name, this.converted);
   }
 }
