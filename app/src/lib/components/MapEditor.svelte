@@ -37,9 +37,11 @@
 
   {#if !editor.userMaps.available}
     <p class="warning" role="alert" data-testid="unavailable-note">
-      User maps are only available in the desktop app (they are stored in the app-data folder).
-      Editing, saving and importing are disabled here.
+      User maps can't be stored here: this browser blocks site storage. Editing, saving and
+      importing are disabled; allow site data for this page or use the desktop app.
     </p>
+  {:else if editor.userMaps.notice}
+    <p class="status" data-testid="storage-notice">{editor.userMaps.notice}</p>
   {/if}
 
   {#if editor.error}

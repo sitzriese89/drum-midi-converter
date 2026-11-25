@@ -1,6 +1,6 @@
 # Roadmap — drum-midi-converter
 
-Status: M3 complete. Next: M4 (web build).
+Status: M4 complete. Next: M5 (v1.x features).
 
 ## M0 — Repository skeleton
 
@@ -39,8 +39,10 @@ Status: M3 complete. Next: M4 (web build).
 
 ## M4 — Web build
 
-- [ ] Static web build from the same frontend (WASM core)
-- [ ] File handling without Tauri (browser file input / download)
+- [x] Static web build from the same frontend (WASM core); relative base, deployed
+      to GitHub Pages on `v*` tags (`.github/workflows/web.yml`)
+- [x] File handling without Tauri (browser file input / download); user maps in
+      localStorage, map export as a download; no drag-out on the web
 
 ## M5 — v1.x features (priority order)
 
